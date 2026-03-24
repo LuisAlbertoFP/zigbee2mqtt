@@ -1,0 +1,15 @@
+{
+    "0xa4c1387f4dcc1553": {
+        "state": "ON",
+        "countdown": 0,
+        "power_outage_memory": "off",
+        "switch_type": "state",
+        "indicator_mode": "off",
+        "linkquality": 136
+    },
+    "0x14b457fffe075dd4": {
+        "voltage": 3000,
+        "battery": 100,
+        "linkquality": 148
+    }
+}

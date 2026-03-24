@@ -1,0 +1,15 @@
+listener 1883
+allow_anonymous false  #SEGURIDAD ACTIVADA
+
+
+
+
+
+
+
+
+
+
+listener 9001
+protocol websockets
+allow_anonymous false #SEGURIDAD ACTIVADA

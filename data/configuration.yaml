@@ -1,0 +1,49 @@
+version: 5
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mqtt:1883
+serial:
+  port: /dev/ttyUSB0
+  adapter: ember
+  baudrate: 460800
+  rtscts: true
+advanced:
+  log_level: info
+  channel: 15
+  network_key:
+    - 205
+    - 220
+    - 8
+    - 176
+    - 137
+    - 84
+    - 37
+    - 217
+    - 102
+    - 120
+    - 135
+    - 191
+    - 42
+    - 181
+    - 127
+    - 102
+  pan_id: 2599
+  ext_pan_id:
+    - 142
+    - 117
+    - 206
+    - 212
+    - 77
+    - 170
+    - 246
+    - 246
+frontend:
+  enabled: true
+  port: 8080
+homeassistant:
+  enabled: false
+devices:
+  '0xa4c1387f4dcc1553':
+    friendly_name: '0xa4c1387f4dcc1553'
+  '0x14b457fffe075dd4':
+    friendly_name: Boton

@@ -1,0 +1,10 @@
+listener 1883
+
+# esto lo cambiaremos dinámicamente
+allow_anonymous false
+
+# websocket opcional (lo activaremos/desactivaremos)
+
+password_file /mosquitto/passwd
+
+allow_anonymous false

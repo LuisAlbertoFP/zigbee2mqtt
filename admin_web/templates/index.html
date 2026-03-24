@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>MQTT Security Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: #fff;
+      color: #333;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: #1e1e1e;
+      padding: 30px;
+      border-radius: 16px;
+      width: 560px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .topic {
+      font-family: Consolas, monospace;
+      background: #000;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      word-break: break-all;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .init { background: #555; color: white; }
+    .secure { background: #197c2c; color: white; }
+    .insecure { background: #b30000; color: white; }
+
+    .msg {
+      margin-top: 16px;
+      color: #ddd;
+      font-size: 14px;
+      background: #181818;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .msg div {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>MQTT Security Admin</h2>
+
+    <p>Cliente controlado: <b>{{ web_user }}</b></p>
+
+    <div class="topic">SET → {{ topic_set }}</div>
+    <div class="topic">STATE → {{ topic_state }}</div>
+
+    <form method="post" action="/init">
+      <button class="init" type="submit">Inicializar</button>
+    </form>
+
+    <form method="post" action="/secure">
+      <button class="secure" type="submit">Modo Seguro</button>
+    </form>
+
+    <form method="post" action="/insecure">
+      <button class="insecure" type="submit">Modo Inseguro</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="msg">
+          {% for m in messages %}
+            <div>{{ m }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>MQTT Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      color: #333;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .status {
+      margin-bottom: 30px;
+      font-size: 18px;
+    }
+
+    .btn {
+      display: block;
+      width: 300px;
+      margin: 15px auto;
+      padding: 18px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .red {
+      background: #c62828;
+      color: white;
+    }
+
+    .green {
+      background: #2e7d32;
+      color: white;
+    }
+
+    .blue {
+      background: #1565c0;
+      color: white;
+      display: none;
+    }
+
+    textarea {
+      width: 90%;
+      max-width: 800px;
+      height: 250px;
+      margin-top: 30px;
+      background: #000;
+      color: #0f0;
+      border: 1px solid #333;
+      padding: 10px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>MQTT Admin Panel</h1>
+
+  <div class="status">
+    Estado: <strong>{{ status }}</strong>
+  </div>
+
+  <!-- BOTONES -->
+
+  <form action="/insecure" method="get">
+    <button class="btn red">⚠️ MODO INSEGURO</button>
+  </form>
+
+  <form action="/secure" method="get">
+    <button class="btn green">🔒 MODO SEGURO</button>
+  </form>
+
+  <!-- OPCIONAL: editar config manual -->
+
+  <h2>Configuración actual</h2>
+
+  <form action="/save" method="post">
+    <textarea name="config">{{ config }}</textarea><br>
+    <button class="btn blue">💾 Guardar manualmente</button>
+  </form>
+
+</body>
+</html>

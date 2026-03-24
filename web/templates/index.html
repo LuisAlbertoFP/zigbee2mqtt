@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>MQTT Control Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --panel-2: #182235;
+      --text: #eef3ff;
+      --muted: #9fb0d1;
+      --border: #26324a;
+      --green: #1f9d55;
+      --red: #d64545;
+      --blue: #2f6fed;
+      --orange: #ffb020;
+      --shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: radial-gradient(circle at top, #16213a 0%, #0b1220 45%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hero-right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .badge.ok {
+      color: #b9f3d1;
+      background: rgba(31, 157, 85, 0.12);
+      border-color: rgba(31, 157, 85, 0.35);
+    }
+
+    .badge.error {
+      color: #ffd2d2;
+      background: rgba(214, 69, 69, 0.14);
+      border-color: rgba(214, 69, 69, 0.35);
+    }
+
+    .badge.warn {
+      color: #ffe7b0;
+      background: rgba(255, 176, 32, 0.16);
+      border-color: rgba(255, 176, 32, 0.35);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #6b7a99;
+      box-shadow: 0 0 0 4px rgba(107, 122, 153, 0.15);
+    }
+
+    .badge.ok .dot {
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(31, 157, 85, 0.18);
+    }
+
+    .badge.error .dot {
+      background: var(--red);
+      box-shadow: 0 0 0 4px rgba(214, 69, 69, 0.18);
+    }
+
+    .badge.warn .dot {
+      background: var(--orange);
+      box-shadow: 0 0 0 4px rgba(255, 176, 32, 0.18);
+    }
+
+    .flash-wrap { margin-bottom: 18px; }
+
+    .flash {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .flash .icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .flash.ok {
+      background: rgba(31, 157, 85, 0.14);
+      border-color: rgba(31, 157, 85, 0.35);
+      color: #b9f3d1;
+    }
+
+    .flash.error {
+      background: rgba(214, 69, 69, 0.14);
+      border-color: rgba(214, 69, 69, 0.35);
+      color: #ffd2d2;
+    }
+
+    .flash.denied {
+      background: rgba(255, 176, 32, 0.16);
+      border-color: rgba(255, 176, 32, 0.35);
+      color: #ffe7b0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .hero-right { justify-content: flex-start; }
+    }
+
+    .card {
+      background: rgba(18, 26, 43, 0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .actions {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 18px 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.22);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .btn-on { background: linear-gradient(180deg, #25b864, #178d4b); }
+    .btn-off { background: linear-gradient(180deg, #e25555, #bf3535); }
+    .btn-toggle { background: linear-gradient(180deg, #3a7bff, #235ad0); }
+
+    .meta {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .meta-item {
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+    }
+
+    .meta-label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pill {
+      display: inline-block;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      color: #d9e4ff;
+    }
+
+    .state-box {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+    }
+
+    .state-main {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .state-sub {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .error-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(214, 69, 69, 0.10);
+      border: 1px solid rgba(214, 69, 69, 0.28);
+      color: #ffd2d2;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .events {
+      margin-top: 18px;
+      display: grid;
+      gap: 10px;
+      max-height: 420px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .event {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      display: grid;
+      gap: 4px;
+    }
+
+    .event-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .event-msg {
+      font-size: 14px;
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .tag.ok { background: rgba(31,157,85,.16); color: #b9f3d1; }
+    .tag.info { background: rgba(47,111,237,.16); color: #cfe0ff; }
+    .tag.warn { background: rgba(255,176,32,.16); color: #ffe7b0; }
+    .tag.error { background: rgba(214,69,69,.16); color: #ffd2d2; }
+
+    .hint {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .footer {
+      margin-top: 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1>MQTT Control Pro</h1>
+        <p>Estado en vivo, acciones MQTT y registro reciente de eventos.</p>
+      </div>
+
+      <div class="hero-right">
+        {% if broker_online %}
+          <span id="brokerBadge" class="badge ok"><span class="dot"></span> Broker online</span>
+        {% else %}
+          <span id="brokerBadge" class="badge error"><span class="dot"></span> Broker offline</span>
+        {% endif %}
+
+        {% if device_status == "online" %}
+          <span id="deviceBadge" class="badge ok"><span class="dot"></span> Dispositivo online</span>
+        {% elif device_status == "offline" %}
+          <span id="deviceBadge" class="badge error"><span class="dot"></span> Dispositivo offline</span>
+        {% else %}
+          <span id="deviceBadge" class="badge warn"><span class="dot"></span> Estado desconocido</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="flash-wrap">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for msg in messages %}
+            {% if "ACCESO DENEGADO" in msg %}
+              <div class="flash denied flash-item">
+                <span class="icon">🔒</span>
+                <span>{{ msg }}</span>
+              </div>
+            {% elif "OK" in msg %}
+              <div class="flash ok flash-item">
+                <span class="icon">✅</span>
+                <span>{{ msg }}</span>
+              </div>
+            {% else %}
+              <div class="flash error flash-item">
+                <span class="icon">❌</span>
+                <span>{{ msg }}</span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Acciones</h2>
+        <p>Envía órdenes MQTT al dispositivo configurado.</p>
+
+        <div class="actions">
+          <form method="post" action="/on" class="action-form">
+            <button class="btn btn-on" type="submit">🟢 ENCENDER</button>
+          </form>
+
+          <form method="post" action="/off" class="action-form">
+            <button class="btn btn-off" type="submit">🔴 APAGAR</button>
+          </form>
+
+          <form method="post" action="/toggle" class="action-form">
+            <button class="btn btn-toggle" type="submit">🔄 TOGGLE</button>
+          </form>
+        </div>
+
+        <div class="hint">
+          Si el broker rechaza la orden por permisos, verás <strong>ACCESO DENEGADO</strong>.
+        </div>
+
+        <h2 style="margin-top:22px;">Eventos</h2>
+        <p>Registro reciente de actividad del panel y del dispositivo.</p>
+
+        <div id="events" class="events">
+          {% for ev in events %}
+            <div class="event">
+              <div class="event-top">
+                <span class="tag {{ ev.level }}">{{ ev.level|upper }}</span>
+                <span>{{ ev.ts }}</span>
+              </div>
+              <div class="event-msg">{{ ev.message }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>Estado</h2>
+        <p>Última información recibida del dispositivo y del broker.</p>
+
+        <div class="state-box">
+          <div id="lastState" class="state-main">{{ last_state }}</div>
+          <div id="lastSeen" class="state-sub">Última actualización: {{ last_seen }}</div>
+        </div>
+
+        {% if last_error %}
+          <div id="lastError" class="error-box">
+            <strong>Último error:</strong><br>
+            {{ last_error }}
+          </div>
+        {% else %}
+          <div id="lastError" class="error-box" style="display:none;"></div>
+        {% endif %}
+
+        <div class="meta">
+          <div class="meta-item">
+            <span class="meta-label">Topic de escritura</span>
+            <span id="setTopic" class="pill">{{ set_topic }}</span>
+          </div>
+
+          <div class="meta-item">
+            <span class="meta-label">Topic de estado</span>
+            <span id="stateTopic" class="pill">{{ state_topic }}</span>
+          </div>
+
+          <div class="meta-item">
+            <span class="meta-label">Topic de disponibilidad</span>
+            <span id="availTopic" class="pill">{{ avail_topic }}</span>
+          </div>
+        </div>
+
+        <div class="hint">
+          SIN usuario MQTT.
+        </div>
+      </aside>
+    </div>
+
+    <div class="footer">
+      MQTT Control Pro
+    </div>
+  </div>
+
+  <script>
+    function setBadge(el, state, texts) {
+      el.className = 'badge ' + state;
+      el.innerHTML = '<span class="dot"></span> ' + texts[state];
+    }
+
+    function renderEvents(events) {
+      const wrap = document.getElementById('events');
+      wrap.innerHTML = '';
+
+      events.forEach((ev) => {
+        const row = document.createElement('div');
+        row.className = 'event';
+
+        const top = document.createElement('div');
+        top.className = 'event-top';
+
+        const tag = document.createElement('span');
+        tag.className = 'tag ' + (ev.level || 'info');
+        tag.textContent = (ev.level || 'info').toUpperCase();
+
+        const ts = document.createElement('span');
+        const d = new Date((ev.ts || 0) * 1000);
+        ts.textContent = isNaN(d.getTime()) ? '' : d.toLocaleTimeString();
+
+        top.appendChild(tag);
+        top.appendChild(ts);
+
+        const msg = document.createElement('div');
+        msg.className = 'event-msg';
+        msg.textContent = ev.message || '';
+
+        row.appendChild(top);
+        row.appendChild(msg);
+        wrap.appendChild(row);
+      });
+    }
+
+    async function refreshStatus() {
+      try {
+        const res = await fetch('/api/status', { cache: 'no-store' });
+        const data = await res.json();
+
+        const brokerBadge = document.getElementById('brokerBadge');
+        const deviceBadge = document.getElementById('deviceBadge');
+
+        setBadge(
+          brokerBadge,
+          data.broker_online ? 'ok' : 'error',
+          {
+            ok: 'Broker online',
+            error: 'Broker offline',
+            warn: 'Broker'
+          }
+        );
+
+        let deviceState = 'warn';
+        if (data.device_status === 'online') deviceState = 'ok';
+        else if (data.device_status === 'offline') deviceState = 'error';
+
+        setBadge(
+          deviceBadge,
+          deviceState,
+          {
+            ok: 'Dispositivo online',
+            error: 'Dispositivo offline',
+            warn: 'Estado desconocido'
+          }
+        );
+
+        document.getElementById('lastState').textContent = data.last_state || 'Sin datos';
+        document.getElementById('lastSeen').textContent = 'Última actualización: ' + (data.last_seen || 'Nunca');
+
+        const err = document.getElementById('lastError');
+        if (data.last_error) {
+          err.style.display = 'block';
+          err.innerHTML = '<strong>Último error:</strong><br>' + data.last_error;
+        } else {
+          err.style.display = 'none';
+          err.innerHTML = '';
+        }
+
+        renderEvents(data.events || []);
+      } catch (e) {
+        console.error('Error actualizando estado', e);
+      }
+    }
+
+    setTimeout(() => {
+      document.querySelectorAll('.flash-item').forEach((el) => {
+        el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-4px)';
+        setTimeout(() => el.remove(), 400);
+      });
+    }, 4500);
+
+    document.querySelectorAll('.action-form').forEach((form) => {
+      form.addEventListener('submit', () => {
+        const button = form.querySelector('button');
+        if (button) {
+          button.disabled = true;
+          button.dataset.originalText = button.innerHTML;
+          button.innerHTML = '⏳ Enviando...';
+        }
+      });
+    });
+
+    refreshStatus();
+    setInterval(refreshStatus, 3000);
+  </script>
+</body>
+</html>

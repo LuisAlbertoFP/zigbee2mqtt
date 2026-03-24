@@ -1,0 +1,74 @@
+[2026-03-18 14:03:32] info: 	z2m: Logging to console, file (filename: log.log)
+[2026-03-18 14:03:32] info: 	z2m: Starting Zigbee2MQTT version 2.9.1 (commit #85875aee27caa005946bb5a446080461a0d2fc33
+)
+[2026-03-18 14:03:32] info: 	z2m: Starting zigbee-herdsman (9.0.9)
+[2026-03-18 14:03:32] info: 	zh:ember: Using default stack config.
+[2026-03-18 14:03:32] info: 	zh:ember: ======== Ember Adapter Starting ========
+[2026-03-18 14:03:32] info: 	zh:ember:ezsp: ======== EZSP starting ========
+[2026-03-18 14:03:32] info: 	zh:ember:uart:ash: ======== ASH Adapter reset ========
+[2026-03-18 14:03:32] info: 	zh:ember:uart:ash: Serial port opened
+[2026-03-18 14:03:32] info: 	zh:ember:uart:ash: ======== ASH starting ========
+[2026-03-18 14:03:34] info: 	zh:ember:uart:ash: ======== ASH connected ========
+[2026-03-18 14:03:34] info: 	zh:ember:uart:ash: ======== ASH started ========
+[2026-03-18 14:03:34] info: 	zh:ember:ezsp: ======== EZSP started ========
+[2026-03-18 14:03:34] info: 	zh:ember: Adapter version info: {"ezsp":18,"revision":"8.2.2 [GA]","build":436,"major":8,"minor":2,"patch":2,"special":0,"type":170}
+[2026-03-18 14:03:34] info: 	zh:ember: [STACK STATUS] Network up.
+[2026-03-18 14:03:34] info: 	zh:ember: [INIT TC] Adapter network matches config.
+[2026-03-18 14:03:34] info: 	zh:ember: [CONCENTRATOR] Started source route discovery. 1244ms until next broadcast.
+[2026-03-18 14:03:34] info: 	z2m: zigbee-herdsman started (resumed)
+[2026-03-18 14:03:34] info: 	z2m: Coordinator firmware version: '{"meta":{"build":436,"ezsp":18,"major":8,"minor":2,"patch":2,"revision":"8.2.2 [GA]","special":0,"type":170},"type":"EmberZNet"}'
+[2026-03-18 14:03:34] info: 	z2m: 0xa4c1387f4dcc1553 (0xa4c1387f4dcc1553): TS0001_switch_module - Tuya 1 gang switch module (Router)
+[2026-03-18 14:03:34] info: 	z2m: Currently 1 devices are joined.
+[2026-03-18 14:03:34] info: 	z2m: Connecting to MQTT server at mqtt://mqtt:1883
+[2026-03-18 14:03:34] info: 	z2m: Connected to MQTT server
+[2026-03-18 14:03:34] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/state', payload '{"state":"online"}'
+[2026-03-18 14:03:34] info: 	z2m: Started frontend on port 8080
+[2026-03-18 14:03:34] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":120,"power_outage_memory":"off","state":"OFF","switch_type":"state"}'
+[2026-03-18 14:03:34] info: 	z2m: Zigbee2MQTT started!
+[2026-03-18 14:03:36] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":128,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:03:36] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":128,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:03:39] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":132,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:03:51] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":132,"power_outage_memory":"off","state":"OFF","switch_type":"state"}'
+[2026-03-18 14:03:51] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":132,"power_outage_memory":"off","state":"OFF","switch_type":"state"}'
+[2026-03-18 14:03:54] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":124,"power_outage_memory":"off","state":"OFF","switch_type":"state"}'
+[2026-03-18 14:03:56] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":124,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:03:56] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":124,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:03:59] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":132,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:03:59] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":132,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:04:01] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":132,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:05:08] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":136,"power_outage_memory":"off","state":"OFF","switch_type":"state"}'
+[2026-03-18 14:05:08] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":136,"power_outage_memory":"off","state":"OFF","switch_type":"state"}'
+[2026-03-18 14:05:10] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":132,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:05:10] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":132,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:05:12] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/0xa4c1387f4dcc1553', payload '{"countdown":0,"indicator_mode":"on","linkquality":136,"power_outage_memory":"off","state":"ON","switch_type":"state"}'
+[2026-03-18 14:08:17] info: 	z2m: Stopping Zigbee2MQTT (restart=false, code=0, signal=SIGTERM)
+[2026-03-18 14:08:17] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/state', payload '{"state":"offline"}'
+[2026-03-18 14:08:17] info: 	z2m: Disconnecting from MQTT server
+[2026-03-18 14:08:17] info: 	z2m: Stopping zigbee-herdsman...
+[2026-03-18 14:08:17] info: 	zh:controller: Wrote coordinator backup to '/app/data/coordinator_backup.json'
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash: ASH COUNTERS since last clear:
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Total frames: RX=90, TX=143
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Cancelled   : RX=0, TX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   DATA frames : RX=89, TX=54
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   DATA bytes  : RX=1824, TX=760
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Retry frames: RX=0, TX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   ACK frames  : RX=0, TX=88
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   NAK frames  : RX=0, TX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   nRdy frames : RX=0, TX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   CRC errors      : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Comm errors     : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Length < minimum: RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Length > maximum: RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Bad controls    : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Bad lengths     : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Bad ACK numbers : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Out of buffers  : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Retry dupes     : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   Out of sequence : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash:   ACK timeouts    : RX=0
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash: Port closed, error=null
+[2026-03-18 14:08:17] info: 	zh:ember:uart:ash: ======== ASH stopped ========
+[2026-03-18 14:08:17] info: 	zh:ember:ezsp: ======== EZSP stopped ========
+[2026-03-18 14:08:17] info: 	zh:ember: ======== Ember Adapter Stopped ========
+[2026-03-18 14:08:17] info: 	z2m: Stopped zigbee-herdsman
+[2026-03-18 14:08:17] info: 	z2m: Stopped Zigbee2MQTT
