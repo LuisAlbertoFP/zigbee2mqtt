@@ -47,7 +47,7 @@ services:
     #   - mqtt
     environment:
       #MQTT_HOST: mqtt
-      MQTT_HOST: core-mosquitto
+      MQTT_HOST: localhost
       MQTT_PORT: "1883"
       MQTT_USERNAME: webui
       MQTT_PASSWORD: cambia_webui
