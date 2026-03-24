@@ -1,40 +1,40 @@
 services:
-  zigbee2mqtt:
-    container_name: zigbee2mqtt
-    image: koenkk/zigbee2mqtt
-    restart: unless-stopped
-    volumes:
-      - ./data:/app/data
-      - /run/udev:/run/udev:ro
-    devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0
-    ports:
-      - "9090:8080"
-    environment:
-      - TZ=Europe/Madrid
+  # zigbee2mqtt:
+  #   container_name: zigbee2mqtt
+  #   image: koenkk/zigbee2mqtt
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./data:/app/data
+  #     - /run/udev:/run/udev:ro
+  #   devices:
+  #     - /dev/ttyUSB0:/dev/ttyUSB0
+  #   ports:
+  #     - "9090:8080"
+  #   environment:
+  #     - TZ=Europe/Madrid
 
-  mqtt:
-    container_name: mqtt
-    image: eclipse-mosquitto:2.0
-    restart: unless-stopped
-    volumes:
-      - ./mosquitto:/mosquitto
-    ports:
-      - "1883:1883"
-      - "9001:9001"
-    command: "mosquitto -c /mosquitto/mosquitto-no-auth.conf"
+  # mqtt:
+  #   container_name: mqtt
+  #   image: eclipse-mosquitto:2.0
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./mosquitto:/mosquitto
+  #   ports:
+  #     - "1883:1883"
+  #     - "9001:9001"
+  #   command: "mosquitto -c /mosquitto/mosquitto-no-auth.conf"
 
-  esphome:
-    container_name: esphome
-    image: ghcr.io/esphome/esphome:latest
-    restart: unless-stopped
-    ports:
-      - "6052:6052"
-    volumes:
-      - ./esphome:/config
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - TZ=Europe/Madrid
+  # esphome:
+  #   container_name: esphome
+  #   image: ghcr.io/esphome/esphome:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6052:6052"
+  #   volumes:
+  #     - ./esphome:/config
+  #     - /etc/localtime:/etc/localtime:ro
+  #   environment:
+  #     - TZ=Europe/Madrid
 
 
   web:
@@ -42,10 +42,11 @@ services:
     container_name: zigbee_lab_web
     ports:
       - "8090:8080"
-    depends_on:
-      - mqtt
+    # depends_on:
+    #   - mqtt
     environment:
-      MQTT_HOST: mqtt
+      #MQTT_HOST: mqtt
+      MQTT_HOST: core-mosquitto
       MQTT_PORT: "1883"
       MQTT_USERNAME: webui
       MQTT_PASSWORD: cambia_webui
@@ -54,19 +55,19 @@ services:
     volumes:
       - ./web:/app 
 
-  simulator:
-    build: ./simulador
-    container_name: zigbee_lab_simulator
-    depends_on:
-      - mqtt
-    environment:
-      MQTT_HOST: mqtt
-      MQTT_PORT: "1883"
-      MQTT_SET_TOPIC: zigbee2mqtt/lab_ts0001_switch/set
-      MQTT_STATE_TOPIC: zigbee2mqtt/lab_ts0001_switch
-      IEEE_ADDRESS: "0xa4c1387f4dcc1553"
-      MODEL: "TS0001_switch_module"
-      FRIENDLY_NAME: "lab_ts0001_switch"
+  # simulator:
+  #   build: ./simulador
+  #   container_name: zigbee_lab_simulator
+  #   depends_on:
+  #     - mqtt
+  #   environment:
+  #     MQTT_HOST: mqtt
+  #     MQTT_PORT: "1883"
+  #     MQTT_SET_TOPIC: zigbee2mqtt/lab_ts0001_switch/set
+  #     MQTT_STATE_TOPIC: zigbee2mqtt/lab_ts0001_switch
+  #     IEEE_ADDRESS: "0xa4c1387f4dcc1553"
+  #     MODEL: "TS0001_switch_module"
+  #     FRIENDLY_NAME: "lab_ts0001_switch"
 
   # admin_web:
   #   build: ./admin_web
