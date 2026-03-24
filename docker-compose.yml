@@ -54,6 +54,8 @@ services:
       MQTT_SET_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553/set
       MQTT_STATE_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553
     restart: unless-stopped
+    extra_hosts:
+       - "host.docker.internal:host-gateway"
  #   volumes:
  #     - ./web:/app 
 
