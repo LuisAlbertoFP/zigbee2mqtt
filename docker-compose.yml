@@ -49,8 +49,8 @@ services:
       #MQTT_HOST: mqtt
       MQTT_HOST: core-mosquitto
       MQTT_PORT: "1883"
-      MQTT_USERNAME: webui
-      MQTT_PASSWORD: cambia_webui
+      MQTT_USERNAME: ${MQTT_USERNAME}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
       MQTT_SET_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553/set
       MQTT_STATE_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553
     restart: unless-stopped
