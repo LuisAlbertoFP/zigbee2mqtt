@@ -53,8 +53,9 @@ services:
       MQTT_PASSWORD: cambia_webui
       MQTT_SET_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553/set
       MQTT_STATE_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553
-    volumes:
-      - ./web:/app 
+    restart: unless-stopped
+ #   volumes:
+ #     - ./web:/app 
 
   # simulator:
   #   build: ./simulador
