@@ -47,15 +47,16 @@ services:
     #   - mqtt
     environment:
       #MQTT_HOST: mqtt
-      MQTT_HOST: host.docker.internal
+      MQTT_HOST: core-mosquitto
       MQTT_PORT: "1883"
       MQTT_USERNAME: webui
       MQTT_PASSWORD: cambia_webui
       MQTT_SET_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553/set
       MQTT_STATE_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553
     restart: unless-stopped
-    extra_hosts:
-       - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - hassio
  #   volumes:
  #     - ./web:/app 
 
@@ -104,3 +105,7 @@ services:
       - ./mqtt-admin:/app 
       - ./mosquitto:/mosquitto
       - /var/run/docker.sock:/var/run/docker.sock
+networks:
+  hassio:
+    external: true
+    name: hassio
