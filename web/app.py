@@ -24,6 +24,9 @@ STATE_TTL_SECONDS = int(os.getenv("STATE_TTL_SECONDS", "30"))
 MAX_EVENTS = int(os.getenv("MAX_EVENTS", "50"))
 PUBLISH_TIMEOUT = float(os.getenv("MQTT_PUBLISH_TIMEOUT", "5"))
 
+MQTT_BUTTON_TOPIC = os.getenv("MQTT_BUTTON_TOPIC", "zigbee2mqtt/boton")
+
+
 state_lock = threading.Lock()
 runtime_state: dict[str, Any] = {
     "broker_online": False,
@@ -327,6 +330,47 @@ def health():
         "last_error": data["last_error"],
     }
 
+
+
+def publish_to_topic(topic: str, payload: dict[str, Any]) -> tuple[bool, str, bool]:
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"web-ui-pub-{int(time.time())}")
+    mqtt_auth(client)
+
+    try:
+        client.connect(MQTT_HOST, MQTT_PORT, 60)
+        client.loop_start()
+
+        result = client.publish(topic, json.dumps(payload), qos=0, retain=False)
+        result.wait_for_publish(timeout=PUBLISH_TIMEOUT)
+
+        rc = result.rc
+        client.loop_stop()
+        client.disconnect()
+
+        if rc == mqtt.MQTT_ERR_SUCCESS:
+            update_runtime(last_error=None)
+            add_event("ok", f"Publicado en {topic}: {payload}")
+            return True, "publicado", False
+
+        error_msg = f"rc={rc}"
+        update_runtime(last_error=error_msg)
+        add_event("error", f"Error publicando en {topic}: {error_msg}")
+        return False, error_msg, is_access_denied(error_msg)
+
+    except Exception as exc:
+        error_msg = str(exc)
+        update_runtime(last_error=error_msg, broker_online=False)
+        add_event("error", f"Excepción publicando en {topic}: {error_msg}")
+        return False, error_msg, is_access_denied(error_msg)
+
+def publish_payload(payload: dict[str, Any]) -> tuple[bool, str, bool]:
+    return publish_to_topic(MQTT_SET_TOPIC, payload)
+
+@app.post("/button-single")
+def button_single():
+    ok, msg, denied = publish_to_topic(MQTT_BUTTON_TOPIC, {"action": "single"})
+    handle_result("BOTÓN SINGLE", ok, msg, denied)
+    return redirect(url_for("index"))
 
 if __name__ == "__main__":
     ensure_subscriber_started()
