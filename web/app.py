@@ -24,7 +24,7 @@ STATE_TTL_SECONDS = int(os.getenv("STATE_TTL_SECONDS", "30"))
 MAX_EVENTS = int(os.getenv("MAX_EVENTS", "50"))
 PUBLISH_TIMEOUT = float(os.getenv("MQTT_PUBLISH_TIMEOUT", "5"))
 
-MQTT_BUTTON_TOPIC = os.getenv("MQTT_BUTTON_TOPIC", "zigbee2mqtt/boton")
+MQTT_BUTTON_TOPIC = os.getenv("MQTT_BUTTON_TOPIC", "zigbee2mqtt/0x14b457fffe075dd4")
 
 
 state_lock = threading.Lock()
