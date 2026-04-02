@@ -14,6 +14,7 @@ services:
       MQTT_SET_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553/set
       MQTT_STATE_TOPIC: zigbee2mqtt/0xa4c1387f4dcc1553
       MQTT_BUTTON_TOPIC: ${MQTT_BUTTON_TOPIC}
+      GIT_REPO_URL: https://github.com/LuisAlbertoFP/zigbee2mqtt.git
     restart: unless-stopped
     networks:
       - default
