@@ -26,3 +26,5 @@ networks:
   hassio:
     external: true
     name: hassio
+volumes:
+  web_cache:
