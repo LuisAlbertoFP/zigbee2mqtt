@@ -96,16 +96,16 @@ services:
   #   volumes:
   #     - ./admin_web:/app
 
-  mqtt-admin:
-    container_name: mqtt-admin
-    build: ./mqtt-admin
-    restart: unless-stopped
-    ports:
-      - "9096:8080"
-    volumes:
-      - ./mqtt-admin:/app 
-      - ./mosquitto:/mosquitto
-      - /var/run/docker.sock:/var/run/docker.sock
+  # mqtt-admin:
+  #   container_name: mqtt-admin
+  #   build: ./mqtt-admin
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9096:8080"
+  #   volumes:
+  #     - ./mqtt-admin:/app 
+  #     - ./mosquitto:/mosquitto
+  #     - /var/run/docker.sock:/var/run/docker.sock
 networks:
   hassio:
     external: true
