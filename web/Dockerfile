@@ -2,17 +2,18 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-COPY app.py /app/
-COPY templates /app/templates/
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-
-#COPY app.py .
-#COPY templates ./templates
+RUN mkdir -p /opt/source /opt/cache /app/templates
 
 EXPOSE 8080
 
-CMD ["python", "app.py"]
+ENTRYPOINT ["/entrypoint.sh"]
