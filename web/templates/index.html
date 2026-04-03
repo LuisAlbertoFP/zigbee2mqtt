@@ -627,6 +627,30 @@
       letter-spacing: .08em;
       text-transform: uppercase;
     }
+
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .brand-logo {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.04);
+        padding: 6px;
+        box-shadow: 0 0 18px rgba(60,255,143,.08);
+        flex: 0 0 auto;
+      }
+
+      .brand-text {
+        min-width: 0;
+      }
   </style>
 </head>
 <body>
