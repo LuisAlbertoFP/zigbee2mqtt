@@ -385,7 +385,7 @@ def attack2_worker():
         try:
             # Forzamos OFF constantemente
             publish_to_topic(MQTT_SET_TOPIC, {"state": "OFF"})
-            time.sleep(0.2)  # frecuencia alta (ajustable)
+            time.sleep(0.1)  # frecuencia alta (ajustable)
         except Exception as e:
             add_event("error", f"Ataque2 error: {e}")
             break
