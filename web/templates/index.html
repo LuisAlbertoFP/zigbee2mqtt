@@ -2,162 +2,223 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>MQTT Control Pro</title>
+  <title>MQTT Control Pro // Hacker Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
     :root {
-      --bg: #0b1220;
-      --bg-2: #0f1729;
-      --panel: rgba(18, 26, 43, 0.92);
-      --panel-2: #182235;
-      --panel-3: rgba(255,255,255,0.03);
-      --text: #eef3ff;
-      --muted: #9fb0d1;
-      --border: #26324a;
-      --border-soft: rgba(255,255,255,0.06);
-
-      --green: #1f9d55;
-      --green-2: #25b864;
-
-      --red: #d64545;
-      --red-2: #ff5b5b;
-
-      --blue: #2f6fed;
-      --blue-2: #4b86ff;
-
-      --orange: #ffb020;
-      --purple: #8b5cf6;
-
-      --shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
-      --shadow-soft: 0 10px 22px rgba(0,0,0,0.22);
+      --bg: #05070a;
+      --panel: rgba(8, 14, 10, 0.88);
+      --panel-2: rgba(11, 20, 14, 0.96);
+      --panel-3: rgba(14, 27, 18, 0.92);
+      --text: #d9ffe7;
+      --muted: #79c79a;
+      --line: rgba(75, 255, 140, 0.18);
+      --line-strong: rgba(75, 255, 140, 0.34);
+      --green: #3cff8f;
+      --green-2: #18b45e;
+      --red: #ff4d6d;
+      --red-2: #a1002b;
+      --amber: #ffc857;
+      --blue: #4fc3ff;
+      --purple: #b07cff;
+      --shadow: 0 0 0 1px rgba(60,255,143,.06), 0 18px 45px rgba(0,0,0,.45);
       --radius: 18px;
-      --radius-sm: 14px;
     }
 
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
       margin: 0;
-      font-family: Inter, Arial, sans-serif;
+      min-height: 100%;
       background:
-        radial-gradient(circle at top, #16213a 0%, #0b1220 45%),
-        linear-gradient(180deg, #0a1020, #0b1220);
+        radial-gradient(circle at top, rgba(30,100,60,.18), transparent 26%),
+        linear-gradient(180deg, #040607 0%, #05070a 100%);
       color: var(--text);
-      min-height: 100vh;
+      font-family: "SFMono-Regular", Menlo, Consolas, Monaco, monospace;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,0.015) 0px,
+          rgba(255,255,255,0.015) 1px,
+          transparent 2px,
+          transparent 4px
+        );
+      pointer-events: none;
+      opacity: 0.28;
+      mix-blend-mode: soft-light;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 0%, rgba(60,255,143,0.035) 50%, transparent 100%);
+      background-size: 100% 240px;
+      animation: scan 7s linear infinite;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    @keyframes scan {
+      from { transform: translateY(-240px); }
+      to { transform: translateY(240px); }
     }
 
     .wrap {
-      max-width: 1260px;
+      max-width: 1320px;
       margin: 0 auto;
-      padding: 28px 18px 40px;
+      padding: 22px 16px 34px;
+      position: relative;
+      z-index: 1;
     }
 
     .hero {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 22px;
-      padding: 24px;
-      border: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    .hero-card,
+    .card {
+      background: linear-gradient(180deg, rgba(13,24,17,.96), rgba(8,14,10,.96));
+      border: 1px solid var(--line);
       border-radius: var(--radius);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
       box-shadow: var(--shadow);
       position: relative;
       overflow: hidden;
     }
 
-    .hero::before {
+    .hero-card::before,
+    .card::before {
       content: "";
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at right top, rgba(47,111,237,0.14), transparent 28%),
-        radial-gradient(circle at left bottom, rgba(31,157,85,0.08), transparent 25%);
+        linear-gradient(90deg, transparent, rgba(60,255,143,.05), transparent);
+      transform: translateX(-100%);
+      animation: shimmer 8s linear infinite;
       pointer-events: none;
     }
 
-    .hero > * {
-      position: relative;
-      z-index: 1;
+    @keyframes shimmer {
+      to { transform: translateX(100%); }
     }
 
-    .hero h1 {
-      margin: 0 0 8px;
+    .hero-main {
+      padding: 22px;
+    }
+
+    .hero-main h1 {
+      margin: 0 0 10px;
       font-size: 30px;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
+      color: var(--green);
+      letter-spacing: .04em;
+      text-shadow: 0 0 12px rgba(60,255,143,.25);
     }
 
-    .hero p {
+    .hero-main p {
       margin: 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
+      line-height: 1.6;
     }
 
-    .hero-right {
+    .hero-main .terminal-line {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(5,12,8,.65);
+      color: #b9ffd4;
+      font-size: 12px;
+    }
+
+    .hero-status {
+      padding: 18px;
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .status-title {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .status-badges {
+      display: flex;
       flex-wrap: wrap;
-      justify-content: flex-end;
+      gap: 10px;
     }
 
     .badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      min-height: 40px;
       padding: 10px 14px;
       border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--panel);
+      border: 1px solid var(--line);
+      background: rgba(5,12,8,.7);
+      font-size: 12px;
       color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-      backdrop-filter: blur(8px);
-    }
-
-    .badge.ok {
-      color: #b9f3d1;
-      background: rgba(31, 157, 85, 0.12);
-      border-color: rgba(31, 157, 85, 0.35);
-    }
-
-    .badge.error {
-      color: #ffd2d2;
-      background: rgba(214, 69, 69, 0.14);
-      border-color: rgba(214, 69, 69, 0.35);
-    }
-
-    .badge.warn {
-      color: #ffe7b0;
-      background: rgba(255, 176, 32, 0.16);
-      border-color: rgba(255, 176, 32, 0.35);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.01);
     }
 
     .dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: #6b7a99;
-      box-shadow: 0 0 0 4px rgba(107, 122, 153, 0.15);
+      background: #4d6f5b;
+      box-shadow: 0 0 0 4px rgba(77,111,91,.15);
       flex: 0 0 auto;
     }
 
+    .badge.ok {
+      color: #cffff0;
+      border-color: rgba(60,255,143,.34);
+      box-shadow: 0 0 18px rgba(60,255,143,.08), inset 0 0 0 1px rgba(60,255,143,.06);
+    }
     .badge.ok .dot {
       background: var(--green);
-      box-shadow: 0 0 0 4px rgba(31, 157, 85, 0.18);
+      box-shadow: 0 0 0 4px rgba(60,255,143,.15), 0 0 14px rgba(60,255,143,.45);
     }
 
+    .badge.error {
+      color: #ffd6de;
+      border-color: rgba(255,77,109,.34);
+      box-shadow: 0 0 18px rgba(255,77,109,.08), inset 0 0 0 1px rgba(255,77,109,.06);
+    }
     .badge.error .dot {
       background: var(--red);
-      box-shadow: 0 0 0 4px rgba(214, 69, 69, 0.18);
+      box-shadow: 0 0 0 4px rgba(255,77,109,.14), 0 0 14px rgba(255,77,109,.32);
     }
 
+    .badge.warn {
+      color: #ffeec3;
+      border-color: rgba(255,200,87,.34);
+    }
     .badge.warn .dot {
-      background: var(--orange);
-      box-shadow: 0 0 0 4px rgba(255, 176, 32, 0.18);
+      background: var(--amber);
+      box-shadow: 0 0 0 4px rgba(255,200,87,.14), 0 0 14px rgba(255,200,87,.28);
     }
 
     .flash-wrap { margin-bottom: 18px; }
@@ -169,84 +230,58 @@
       margin-bottom: 10px;
       padding: 14px 16px;
       border-radius: 14px;
-      font-weight: 700;
-      border: 1px solid transparent;
-      animation: fadeIn 0.25s ease;
-      box-shadow: var(--shadow-soft);
+      border: 1px solid;
+      font-size: 13px;
+      animation: fadeIn .25s ease;
+      background: rgba(7,12,9,.9);
     }
 
-    .flash .icon {
-      font-size: 18px;
-      line-height: 1;
-    }
+    .flash.ok { color: #c8ffe0; border-color: rgba(60,255,143,.25); }
+    .flash.error { color: #ffd4da; border-color: rgba(255,77,109,.25); }
+    .flash.denied { color: #ffe9b0; border-color: rgba(255,200,87,.25); }
 
-    .flash.ok {
-      background: rgba(31, 157, 85, 0.14);
-      border-color: rgba(31, 157, 85, 0.35);
-      color: #b9f3d1;
-    }
-
-    .flash.error {
-      background: rgba(214, 69, 69, 0.14);
-      border-color: rgba(214, 69, 69, 0.35);
-      color: #ffd2d2;
-    }
-
-    .flash.denied {
-      background: rgba(255, 176, 32, 0.16);
-      border-color: rgba(255, 176, 32, 0.35);
-      color: #ffe7b0;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .grid {
       display: grid;
-      grid-template-columns: 1.12fr 0.88fr;
+      grid-template-columns: 1.12fr .88fr;
       gap: 18px;
     }
 
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr; }
-
-      .hero {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .hero-right {
-        justify-content: flex-start;
-      }
-    }
-
     .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 22px;
+      padding: 20px;
     }
 
     .card h2 {
       margin: 0 0 8px;
-      font-size: 19px;
+      color: var(--green);
+      font-size: 18px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
     }
 
     .card p {
       margin: 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
+      line-height: 1.55;
     }
 
     .action-groups {
       display: grid;
-      gap: 18px;
-      margin-top: 20px;
+      gap: 16px;
+      margin-top: 18px;
     }
 
     .action-group {
-      border: 1px solid var(--border-soft);
-      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.015));
-      border-radius: 18px;
-      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(8,14,10,.78), rgba(8,14,10,.92));
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.012);
     }
 
     .group-header {
@@ -254,67 +289,56 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7,13,9,.8);
     }
 
     .group-title {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .group-icon {
-      width: 38px;
-      height: 38px;
+      width: 42px;
+      height: 42px;
       border-radius: 12px;
       display: grid;
       place-items: center;
       font-size: 18px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      box-shadow: inset 0 0 18px rgba(255,255,255,.02);
     }
 
     .group-title h3 {
       margin: 0;
-      font-size: 16px;
-      line-height: 1.1;
+      font-size: 15px;
+      color: var(--text);
+      letter-spacing: .03em;
     }
 
     .group-title p {
       margin: 4px 0 0;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
     }
 
     .group-badge {
       padding: 6px 10px;
-      font-size: 11px;
       border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      background: rgba(255,255,255,0.03);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      font-size: 11px;
       font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(6,12,8,.75);
     }
 
-    .group-normal .group-icon {
-      color: #cfe0ff;
-      background: rgba(47,111,237,.12);
-      border-color: rgba(47,111,237,.25);
-    }
-
-    .group-emulation .group-icon {
-      color: #e7dcff;
-      background: rgba(139,92,246,.14);
-      border-color: rgba(139,92,246,.3);
-    }
-
-    .group-attack .group-icon {
-      color: #ffd8d8;
-      background: rgba(214,69,69,.14);
-      border-color: rgba(214,69,69,.3);
+    .group-body {
+      padding: 14px;
     }
 
     .actions-grid {
@@ -323,7 +347,7 @@
       gap: 12px;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 700px) {
       .actions-grid {
         grid-template-columns: 1fr;
       }
@@ -335,32 +359,37 @@
 
     .btn {
       width: 100%;
-      min-height: 76px;
+      min-height: 78px;
+      border-radius: 16px;
       border: 1px solid transparent;
-      border-radius: 18px;
-      padding: 16px;
-      font-size: 15px;
-      font-weight: 700;
       cursor: pointer;
-      color: white;
-      transition:
-        transform 0.18s ease,
-        filter 0.18s ease,
-        opacity 0.18s ease,
-        border-color 0.18s ease,
-        box-shadow 0.18s ease;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.22);
+      color: #f4fff9;
+      padding: 14px 16px;
       position: relative;
       overflow: hidden;
+      background: #111;
       text-align: left;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, filter .16s ease;
+      box-shadow: 0 12px 24px rgba(0,0,0,.28);
     }
 
     .btn::before {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02));
-      opacity: 0.85;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.015));
+      pointer-events: none;
+    }
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      inset: auto -30% -60% auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,.18), transparent 70%);
+      opacity: .18;
       pointer-events: none;
     }
 
@@ -369,12 +398,10 @@
       filter: brightness(1.04);
     }
 
-    .btn:active {
-      transform: translateY(0);
-    }
+    .btn:active { transform: translateY(0); }
 
     .btn:disabled {
-      opacity: 0.65;
+      opacity: .7;
       cursor: wait;
     }
 
@@ -387,68 +414,102 @@
     }
 
     .btn-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
       font-size: 15px;
       font-weight: 800;
-      letter-spacing: 0.01em;
+      letter-spacing: .03em;
     }
 
     .btn-subtitle {
-      font-size: 12px;
-      color: rgba(255,255,255,0.82);
-      font-weight: 500;
-      line-height: 1.35;
+      font-size: 11px;
+      line-height: 1.45;
+      color: rgba(255,255,255,.8);
     }
 
     .btn-on {
-      background: linear-gradient(180deg, #25b864, #178d4b);
-      border-color: rgba(37,184,100,0.35);
+      background: linear-gradient(180deg, #1b5f35, #0d3a20);
+      border-color: rgba(60,255,143,.25);
+      box-shadow: 0 0 0 1px rgba(60,255,143,.04), 0 0 22px rgba(60,255,143,.08), 0 12px 24px rgba(0,0,0,.28);
     }
 
     .btn-off {
-      background: linear-gradient(180deg, #e25555, #bf3535);
-      border-color: rgba(226,85,85,0.35);
+      background: linear-gradient(180deg, #6a1a2b, #3d0814);
+      border-color: rgba(255,77,109,.24);
+      box-shadow: 0 0 0 1px rgba(255,77,109,.04), 0 0 22px rgba(255,77,109,.08), 0 12px 24px rgba(0,0,0,.28);
     }
 
     .btn-toggle {
-      background: linear-gradient(180deg, #3a7bff, #235ad0);
-      border-color: rgba(58,123,255,0.35);
+      background: linear-gradient(180deg, #12435a, #0b2330);
+      border-color: rgba(79,195,255,.24);
+      box-shadow: 0 0 0 1px rgba(79,195,255,.04), 0 0 22px rgba(79,195,255,.08), 0 12px 24px rgba(0,0,0,.28);
     }
 
     .btn-emulate {
-      background: linear-gradient(180deg, #9a6bff, #6e42d8);
-      border-color: rgba(154,107,255,0.35);
+      background: linear-gradient(180deg, #43216b, #22103a);
+      border-color: rgba(176,124,255,.24);
+      box-shadow: 0 0 0 1px rgba(176,124,255,.04), 0 0 22px rgba(176,124,255,.08), 0 12px 24px rgba(0,0,0,.28);
     }
 
     .btn-attack {
-      background: linear-gradient(180deg, #ff4d4d, #8b0000);
-      border-color: rgba(255,77,77,0.35);
-      animation: pulse 1.25s infinite;
+      background: linear-gradient(180deg, #7e132f, #3b0715);
+      border-color: rgba(255,77,109,.32);
+      box-shadow: 0 0 0 1px rgba(255,77,109,.05), 0 0 26px rgba(255,77,109,.15), 0 12px 24px rgba(0,0,0,.28);
+      animation: pulse 1.3s infinite;
     }
 
     .btn-stop-attack {
-      background: linear-gradient(180deg, #ff9a3c, #cc5f00);
-      border-color: rgba(255,154,60,0.35);
+      background: linear-gradient(180deg, #6a4911, #392507);
+      border-color: rgba(255,200,87,.28);
+      box-shadow: 0 0 0 1px rgba(255,200,87,.05), 0 0 24px rgba(255,200,87,.12), 0 12px 24px rgba(0,0,0,.28);
     }
 
-    .btn:hover.btn-attack {
-      box-shadow:
-        0 12px 28px rgba(0,0,0,0.25),
-        0 0 0 1px rgba(255,77,77,0.18),
-        0 0 28px rgba(255,77,77,0.18);
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255,77,109,.34), 0 0 26px rgba(255,77,109,.12), 0 12px 24px rgba(0,0,0,.28); }
+      70% { box-shadow: 0 0 0 14px rgba(255,77,109,0), 0 0 30px rgba(255,77,109,.16), 0 12px 24px rgba(0,0,0,.28); }
+      100% { box-shadow: 0 0 0 0 rgba(255,77,109,0), 0 0 26px rgba(255,77,109,.12), 0 12px 24px rgba(0,0,0,.28); }
     }
 
     .hint {
       margin-top: 18px;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.55;
       padding: 14px 16px;
       border-radius: 14px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border-soft);
+      border: 1px solid var(--line);
+      background: rgba(6,12,8,.74);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .state-box {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(6,12,8,.78);
+    }
+
+    .state-main {
+      font-size: 26px;
+      font-weight: 800;
+      color: #d8ffea;
+      text-shadow: 0 0 10px rgba(60,255,143,.12);
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .state-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .error-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,77,109,.24);
+      background: rgba(40,7,15,.72);
+      color: #ffd4dc;
+      font-size: 13px;
+      overflow-wrap: anywhere;
     }
 
     .meta {
@@ -460,69 +521,36 @@
     .meta-item {
       padding: 14px;
       border-radius: 14px;
-      background: var(--panel-2);
-      border: 1px solid var(--border);
+      background: rgba(6,12,8,.76);
+      border: 1px solid var(--line);
     }
 
     .meta-label {
       display: block;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
       margin-bottom: 8px;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
 
     .pill {
       display: inline-block;
       max-width: 100%;
       overflow-wrap: anywhere;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 999px;
       padding: 8px 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
-      color: #d9e4ff;
-    }
-
-    .state-box {
-      margin-top: 18px;
-      padding: 18px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
-    }
-
-    .state-main {
-      font-size: 26px;
-      font-weight: 800;
-      margin-bottom: 8px;
-      letter-spacing: -0.02em;
-    }
-
-    .state-sub {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .error-box {
-      margin-top: 14px;
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(214, 69, 69, 0.10);
-      border: 1px solid rgba(214, 69, 69, 0.28);
-      color: #ffd2d2;
-      font-size: 14px;
-      overflow-wrap: anywhere;
+      border-radius: 999px;
+      border: 1px solid rgba(60,255,143,.16);
+      background: rgba(60,255,143,.05);
+      color: #cffff0;
+      font-size: 12px;
     }
 
     .events {
       margin-top: 18px;
       display: grid;
       gap: 10px;
-      max-height: 420px;
+      max-height: 430px;
       overflow: auto;
       padding-right: 4px;
     }
@@ -530,8 +558,8 @@
     .event {
       padding: 12px 14px;
       border-radius: 14px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      background: rgba(6,12,8,.74);
       display: grid;
       gap: 4px;
     }
@@ -541,13 +569,13 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
     }
 
     .event-msg {
-      font-size: 14px;
-      color: var(--text);
+      font-size: 13px;
+      color: #d8ffea;
       overflow-wrap: anywhere;
     }
 
@@ -555,56 +583,57 @@
       display: inline-block;
       padding: 4px 8px;
       border-radius: 999px;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 1px solid var(--line);
     }
 
-    .tag.ok { background: rgba(31,157,85,.16); color: #b9f3d1; }
-    .tag.info { background: rgba(47,111,237,.16); color: #cfe0ff; }
-    .tag.warn { background: rgba(255,176,32,.16); color: #ffe7b0; }
-    .tag.error { background: rgba(214,69,69,.16); color: #ffd2d2; }
+    .tag.ok { color: #cffff0; border-color: rgba(60,255,143,.26); background: rgba(60,255,143,.08); }
+    .tag.info { color: #d5f1ff; border-color: rgba(79,195,255,.26); background: rgba(79,195,255,.08); }
+    .tag.warn { color: #fff0c4; border-color: rgba(255,200,87,.26); background: rgba(255,200,87,.08); }
+    .tag.error { color: #ffd3dc; border-color: rgba(255,77,109,.26); background: rgba(255,77,109,.08); }
 
     .footer {
       margin-top: 18px;
       text-align: center;
       color: var(--muted);
-      font-size: 12px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255,77,77,0.55); }
-      70% { box-shadow: 0 0 0 14px rgba(255,77,77,0); }
-      100% { box-shadow: 0 0 0 0 rgba(255,77,77,0); }
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
+
     <div class="hero">
-      <div>
-        <h1>MQTT Control Pro</h1>
-        <p>Estado en vivo, acciones MQTT y registro reciente de eventos.</p>
+      <div class="hero-card hero-main">
+        <h1>MQTT CONTROL PRO // HACKER DASHBOARD</h1>
+        <p>Panel táctico para supervisión MQTT, emulación de eventos y activación de secuencias de demo.</p>
+        <div class="terminal-line">
+          root@mqtt-lab:~# monitor --live --topics --control --attack-scenarios
+        </div>
       </div>
 
-      <div class="hero-right">
-        {% if broker_online %}
-          <span id="brokerBadge" class="badge ok"><span class="dot"></span> Broker online</span>
-        {% else %}
-          <span id="brokerBadge" class="badge error"><span class="dot"></span> Broker offline</span>
-        {% endif %}
+      <div class="hero-card hero-status">
+        <div class="status-title">Estado del sistema</div>
+        <div class="status-badges">
+          {% if broker_online %}
+            <span id="brokerBadge" class="badge ok"><span class="dot"></span> BROKER ONLINE</span>
+          {% else %}
+            <span id="brokerBadge" class="badge error"><span class="dot"></span> BROKER OFFLINE</span>
+          {% endif %}
 
-        {% if device_status == "online" %}
-          <span id="deviceBadge" class="badge ok"><span class="dot"></span> Dispositivo online</span>
-        {% elif device_status == "offline" %}
-          <span id="deviceBadge" class="badge error"><span class="dot"></span> Dispositivo offline</span>
-        {% else %}
-          <span id="deviceBadge" class="badge warn"><span class="dot"></span> Estado desconocido</span>
-        {% endif %}
+          {% if device_status == "online" %}
+            <span id="deviceBadge" class="badge ok"><span class="dot"></span> DEVICE ONLINE</span>
+          {% elif device_status == "offline" %}
+            <span id="deviceBadge" class="badge error"><span class="dot"></span> DEVICE OFFLINE</span>
+          {% else %}
+            <span id="deviceBadge" class="badge warn"><span class="dot"></span> STATUS UNKNOWN</span>
+          {% endif %}
+        </div>
       </div>
     </div>
 
@@ -613,20 +642,11 @@
         {% if messages %}
           {% for msg in messages %}
             {% if "ACCESO DENEGADO" in msg %}
-              <div class="flash denied flash-item">
-                <span class="icon">🔒</span>
-                <span>{{ msg }}</span>
-              </div>
+              <div class="flash denied flash-item">🔒 {{ msg }}</div>
             {% elif "OK" in msg %}
-              <div class="flash ok flash-item">
-                <span class="icon">✅</span>
-                <span>{{ msg }}</span>
-              </div>
+              <div class="flash ok flash-item">✅ {{ msg }}</div>
             {% else %}
-              <div class="flash error flash-item">
-                <span class="icon">❌</span>
-                <span>{{ msg }}</span>
-              </div>
+              <div class="flash error flash-item">❌ {{ msg }}</div>
             {% endif %}
           {% endfor %}
         {% endif %}
@@ -635,118 +655,120 @@
 
     <div class="grid">
       <section class="card">
-        <h2>Panel de acciones</h2>
-        <p>Los controles están separados por categoría para que la demo sea más clara visualmente.</p>
+        <h2>Command Console</h2>
+        <p>Controles agrupados por categoría operativa para una demo más clara y agresiva visualmente.</p>
 
         <div class="action-groups">
 
-          <div class="action-group group-normal">
+          <div class="action-group">
             <div class="group-header">
               <div class="group-title">
                 <div class="group-icon">🎛️</div>
                 <div>
                   <h3>Control normal</h3>
-                  <p>Acciones directas sobre el dispositivo</p>
+                  <p>Comandos directos al actuador MQTT</p>
                 </div>
               </div>
-              <span class="group-badge">Operación</span>
+              <span class="group-badge">Operate</span>
             </div>
+            <div class="group-body">
+              <div class="actions-grid">
+                <form method="post" action="/on" class="action-form">
+                  <button class="btn btn-on" type="submit">
+                    <span class="btn-content">
+                      <span class="btn-title">🟢 ENCENDER</span>
+                      <span class="btn-subtitle">Publica ON en el topic principal</span>
+                    </span>
+                  </button>
+                </form>
 
-            <div class="actions-grid">
-              <form method="post" action="/on" class="action-form">
-                <button class="btn btn-on" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🟢 ENCENDER</span>
-                    <span class="btn-subtitle">Publica el estado ON en el topic configurado</span>
-                  </span>
-                </button>
-              </form>
+                <form method="post" action="/off" class="action-form">
+                  <button class="btn btn-off" type="submit">
+                    <span class="btn-content">
+                      <span class="btn-title">🔴 APAGAR</span>
+                      <span class="btn-subtitle">Publica OFF en el topic principal</span>
+                    </span>
+                  </button>
+                </form>
 
-              <form method="post" action="/off" class="action-form">
-                <button class="btn btn-off" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🔴 APAGAR</span>
-                    <span class="btn-subtitle">Publica el estado OFF en el topic configurado</span>
-                  </span>
-                </button>
-              </form>
-
-              <form method="post" action="/toggle" class="action-form">
-                <button class="btn btn-toggle" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🔄 TOGGLE</span>
-                    <span class="btn-subtitle">Alterna el estado actual del dispositivo</span>
-                  </span>
-                </button>
-              </form>
+                <form method="post" action="/toggle" class="action-form">
+                  <button class="btn btn-toggle" type="submit">
+                    <span class="btn-content">
+                      <span class="btn-title">🔄 TOGGLE</span>
+                      <span class="btn-subtitle">Alterna el estado del dispositivo</span>
+                    </span>
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
 
-          <div class="action-group group-emulation">
+          <div class="action-group">
             <div class="group-header">
               <div class="group-title">
                 <div class="group-icon">🧪</div>
                 <div>
                   <h3>Emulación</h3>
-                  <p>Simulación de entrada o interacción física</p>
+                  <p>Simulación de interacción física</p>
                 </div>
               </div>
-              <span class="group-badge">Simulación</span>
+              <span class="group-badge">Simulate</span>
             </div>
-
-            <div class="actions-grid">
-              <form method="post" action="/button-single" class="action-form">
-                <button class="btn btn-emulate" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🔘 EMULAR BOTÓN FÍSICO</span>
-                    <span class="btn-subtitle">Envía una acción equivalente a una pulsación física</span>
-                  </span>
-                </button>
-              </form>
+            <div class="group-body">
+              <div class="actions-grid">
+                <form method="post" action="/button-single" class="action-form">
+                  <button class="btn btn-emulate" type="submit">
+                    <span class="btn-content">
+                      <span class="btn-title">🔘 EMULAR BOTÓN FÍSICO</span>
+                      <span class="btn-subtitle">Genera una pulsación simulada</span>
+                    </span>
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
 
-          <div class="action-group group-attack">
+          <div class="action-group">
             <div class="group-header">
               <div class="group-title">
                 <div class="group-icon">⚠️</div>
                 <div>
                   <h3>Ataques</h3>
-                  <p>Controles separados para activación y parada</p>
+                  <p>Activación y parada de secuencias de demo</p>
                 </div>
               </div>
-              <span class="group-badge">Demo</span>
+              <span class="group-badge">Attack</span>
             </div>
+            <div class="group-body">
+              <div class="actions-grid">
+                <form method="post" action="/attack2/start" class="action-form">
+                  <button class="btn btn-attack" type="submit">
+                    <span class="btn-content">
+                      <span class="btn-title">💥 ATAQUE 2 ON</span>
+                      <span class="btn-subtitle">Activa la rutina de ataque definida en backend</span>
+                    </span>
+                  </button>
+                </form>
 
-            <div class="actions-grid">
-              <form method="post" action="/attack2/start" class="action-form">
-                <button class="btn btn-attack" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">💥 ATAQUE 2 ON</span>
-                    <span class="btn-subtitle">Activa la secuencia definida en el backend</span>
-                  </span>
-                </button>
-              </form>
-
-              <form method="post" action="/attack2/stop" class="action-form">
-                <button class="btn btn-stop-attack" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🛑 ATAQUE 2 OFF</span>
-                    <span class="btn-subtitle">Detiene el ataque y devuelve el control</span>
-                  </span>
-                </button>
-              </form>
+                <form method="post" action="/attack2/stop" class="action-form">
+                  <button class="btn btn-stop-attack" type="submit">
+                    <span class="btn-content">
+                      <span class="btn-title">🛑 ATAQUE 2 OFF</span>
+                      <span class="btn-subtitle">Detiene la secuencia y devuelve control</span>
+                    </span>
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
 
         </div>
 
         <div class="hint">
-          Si el broker rechaza una orden por permisos, aparecerá el aviso
-          <strong>ACCESO DENEGADO</strong>.
+          Si el broker rechaza una orden por permisos, el panel mostrará <strong>ACCESO DENEGADO</strong>.
         </div>
 
-        <h2 style="margin-top:22px;">Eventos</h2>
+        <h2 style="margin-top:22px;">Event Log</h2>
         <p>Registro reciente de actividad del panel y del dispositivo.</p>
 
         <div id="events" class="events">
@@ -763,8 +785,8 @@
       </section>
 
       <aside class="card">
-        <h2>Estado</h2>
-        <p>Última información recibida del dispositivo y del broker.</p>
+        <h2>System State</h2>
+        <p>Última telemetría recibida del broker y del dispositivo.</p>
 
         <div class="state-box">
           <div id="lastState" class="state-main">{{ last_state }}</div>
@@ -798,13 +820,13 @@
         </div>
 
         <div class="hint">
-          SIN usuario MQTT.
+          AUTH MODE: SIN usuario MQTT
         </div>
       </aside>
     </div>
 
     <div class="footer">
-      MQTT Control Pro
+      MQTT CONTROL PRO // LIVE DASHBOARD
     </div>
   </div>
 
@@ -858,9 +880,9 @@
           brokerBadge,
           data.broker_online ? 'ok' : 'error',
           {
-            ok: 'Broker online',
-            error: 'Broker offline',
-            warn: 'Broker'
+            ok: 'BROKER ONLINE',
+            error: 'BROKER OFFLINE',
+            warn: 'BROKER'
           }
         );
 
@@ -872,9 +894,9 @@
           deviceBadge,
           deviceState,
           {
-            ok: 'Dispositivo online',
-            error: 'Dispositivo offline',
-            warn: 'Estado desconocido'
+            ok: 'DEVICE ONLINE',
+            error: 'DEVICE OFFLINE',
+            warn: 'STATUS UNKNOWN'
           }
         );
 
@@ -910,8 +932,7 @@
         const button = form.querySelector('button');
         if (button) {
           button.disabled = true;
-          button.dataset.originalText = button.innerHTML;
-          button.innerHTML = '<span class="btn-content"><span class="btn-title">⏳ Enviando...</span><span class="btn-subtitle">Procesando la acción solicitada</span></span>';
+          button.innerHTML = '<span class="btn-content"><span class="btn-title">⏳ EXECUTING...</span><span class="btn-subtitle">Procesando comando</span></span>';
         }
       });
     });
