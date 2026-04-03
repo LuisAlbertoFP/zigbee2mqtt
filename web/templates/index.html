@@ -664,13 +664,12 @@
             <h1>MQTT CONTROL PRO // HACKER DASHBOARD</h1>
           </div>
         </div>
-      
+    
         <div class="terminal-line">
           root@mqtt-lab:~# monitor --live --topics --control --attack-scenarios
         </div>
       </div>
-      </div>
-
+    
       <div class="hero-card hero-status">
         <div class="status-title">Estado del sistema</div>
         <div class="status-badges">
@@ -679,7 +678,7 @@
           {% else %}
             <span id="brokerBadge" class="badge error"><span class="dot"></span> BROKER OFFLINE</span>
           {% endif %}
-
+    
           {% if device_status == "online" %}
             <span id="deviceBadge" class="badge ok"><span class="dot"></span> DEVICE ONLINE</span>
           {% elif device_status == "offline" %}
