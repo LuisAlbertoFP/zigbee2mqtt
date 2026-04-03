@@ -634,11 +634,18 @@
 
     <div class="hero">
       <div class="hero-card hero-main">
-        <h1>MQTT CONTROL PRO // HACKER DASHBOARD</h1>
-        <p>Panel táctico para supervisión MQTT, emulación de eventos y activación de secuencias de demo.</p>
+        <div class="brand">
+          <img src="{{ url_for('static', filename='logotipo.png') }}" alt="Logotipo del centro" class="brand-logo">
+          <div class="brand-text">
+            <h1>NOMBRE DEL CENTRO</h1>
+            <p>MQTT CONTROL PRO // HACKER DASHBOARD</p>
+          </div>
+        </div>
+      
         <div class="terminal-line">
           root@mqtt-lab:~# monitor --live --topics --control --attack-scenarios
         </div>
+      </div>
       </div>
 
       <div class="hero-card hero-status">
