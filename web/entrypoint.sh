@@ -1,3 +1,4 @@
+#!/bin/sh
 set -eu
 
 REPO_URL="${GIT_REPO_URL:-}"
