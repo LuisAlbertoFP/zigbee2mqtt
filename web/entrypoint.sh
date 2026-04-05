@@ -17,8 +17,8 @@ log() {
 copy_web_dir() {
   SRC_BASE="$1"
 
-  rm -rf "$APP_DIR"
   mkdir -p "$APP_DIR"
+  find "$APP_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 
   cp -r "$SRC_BASE/$WEB_SRC_REL/." "$APP_DIR/"
 }
@@ -28,12 +28,16 @@ copy_from_source() {
 }
 
 copy_from_cache() {
-  copy_web_dir "$CACHE_DIR"
+  mkdir -p "$APP_DIR"
+  find "$APP_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+  cp -r "$CACHE_DIR/." "$APP_DIR/"
 }
 
 save_cache() {
-  rm -rf "$CACHE_DIR"
   mkdir -p "$CACHE_DIR"
+  find "$CACHE_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
   cp -r "$APP_DIR/." "$CACHE_DIR/"
 }
 
