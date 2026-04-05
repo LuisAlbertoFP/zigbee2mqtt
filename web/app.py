@@ -19,18 +19,20 @@ MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
 MQTT_SET_TOPIC = os.getenv("MQTT_SET_TOPIC", "zigbee2mqtt/lab_ts0001_switch/set")
 MQTT_STATE_TOPIC = os.getenv("MQTT_STATE_TOPIC", "zigbee2mqtt/lab_ts0001_switch")
 MQTT_AVAIL_TOPIC = os.getenv("MQTT_AVAIL_TOPIC", "zigbee2mqtt/lab_ts0001_switch/availability")
+MQTT_BUTTON_TOPIC = os.getenv("MQTT_BUTTON_TOPIC", "zigbee2mqtt/0x14b457fffe075dd4")
 
 STATE_TTL_SECONDS = int(os.getenv("STATE_TTL_SECONDS", "30"))
 MAX_EVENTS = int(os.getenv("MAX_EVENTS", "50"))
 PUBLISH_TIMEOUT = float(os.getenv("MQTT_PUBLISH_TIMEOUT", "5"))
-
-MQTT_BUTTON_TOPIC = os.getenv("MQTT_BUTTON_TOPIC", "zigbee2mqtt/0x14b457fffe075dd4")
-
-attack2_active = False
-attack2_thread = None
-
+ATTACK2_INTERVAL = float(os.getenv("ATTACK2_INTERVAL", "0.1"))
 
 state_lock = threading.Lock()
+subscriber_lock = threading.Lock()
+attack2_lock = threading.Lock()
+
+attack2_active = False
+attack2_thread: threading.Thread | None = None
+
 runtime_state: dict[str, Any] = {
     "broker_online": False,
     "device_online_hint": None,
@@ -102,13 +104,16 @@ def format_last_seen(ts: float | None) -> str:
 
 def is_access_denied(error_msg: str) -> bool:
     msg = (error_msg or "").lower()
-    return any(token in msg for token in [
-        "not authorised",
-        "not authorized",
-        "auth",
-        "refused",
-        "rc=5",
-    ])
+    return any(
+        token in msg
+        for token in [
+            "not authorised",
+            "not authorized",
+            "auth",
+            "refused",
+            "rc=5",
+        ]
+    )
 
 
 def compute_device_status(data: dict[str, Any]) -> str:
@@ -129,7 +134,13 @@ def compute_device_status(data: dict[str, Any]) -> str:
     return "online"
 
 
-def on_sub_connect(client: mqtt.Client, userdata: Any, flags: dict, reason_code: Any, properties: Any = None) -> None:
+def on_sub_connect(
+    client: mqtt.Client,
+    userdata: Any,
+    flags: dict,
+    reason_code: Any,
+    properties: Any = None,
+) -> None:
     ok = False
     try:
         ok = int(reason_code) == 0
@@ -147,7 +158,13 @@ def on_sub_connect(client: mqtt.Client, userdata: Any, flags: dict, reason_code:
         add_event("error", msg)
 
 
-def on_sub_disconnect(client: mqtt.Client, userdata: Any, disconnect_flags: Any, reason_code: Any, properties: Any = None) -> None:
+def on_sub_disconnect(
+    client: mqtt.Client,
+    userdata: Any,
+    disconnect_flags: Any,
+    reason_code: Any,
+    properties: Any = None,
+) -> None:
     update_runtime(broker_online=False)
     add_event("warn", "Broker MQTT desconectado")
 
@@ -192,7 +209,10 @@ def on_sub_message(client: mqtt.Client, userdata: Any, msg: mqtt.MQTTMessage) ->
 
 def subscriber_worker() -> None:
     while True:
-        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"web-ui-sub-{int(time.time())}")
+        client = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2,
+            client_id=f"web-ui-sub-{int(time.time() * 1000)}",
+        )
         mqtt_auth(client)
         client.on_connect = on_sub_connect
         client.on_disconnect = on_sub_disconnect
@@ -213,130 +233,22 @@ def ensure_subscriber_started() -> None:
     if current["subscriber_started"]:
         return
 
-    thread = threading.Thread(target=subscriber_worker, daemon=True)
-    thread.start()
-    update_runtime(subscriber_started=True)
-    add_event("info", "Suscriptor MQTT iniciado")
+    with subscriber_lock:
+        current = get_runtime_copy()
+        if current["subscriber_started"]:
+            return
 
-
-def publish_payload(payload: dict[str, Any]) -> tuple[bool, str, bool]:
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"web-ui-pub-{int(time.time())}")
-    mqtt_auth(client)
-
-    try:
-        client.connect(MQTT_HOST, MQTT_PORT, 60)
-        client.loop_start()
-
-        result = client.publish(MQTT_SET_TOPIC, json.dumps(payload), qos=0, retain=False)
-        result.wait_for_publish(timeout=PUBLISH_TIMEOUT)
-
-        rc = result.rc
-        client.loop_stop()
-        client.disconnect()
-
-        if rc == mqtt.MQTT_ERR_SUCCESS:
-            update_runtime(last_error=None)
-            add_event("ok", f"Comando enviado: {payload}")
-            return True, "publicado", False
-
-        error_msg = f"rc={rc}"
-        update_runtime(last_error=error_msg)
-        add_event("error", f"Error publicando: {error_msg}")
-        return False, error_msg, is_access_denied(error_msg)
-
-    except Exception as exc:
-        error_msg = str(exc)
-        update_runtime(last_error=error_msg, broker_online=False)
-        add_event("error", f"Excepción publicando: {error_msg}")
-        return False, error_msg, is_access_denied(error_msg)
-
-
-def handle_result(action: str, ok: bool, msg: str, denied: bool) -> None:
-    if denied:
-        flash(f"{action}: 🔒 ACCESO DENEGADO")
-    else:
-        flash(f"{action}: {'OK' if ok else 'ERROR'} - {msg}")
-
-
-@app.before_request
-def startup() -> None:
-    ensure_subscriber_started()
-
-
-@app.route("/")
-def index():
-    data = get_runtime_copy()
-    device_status = compute_device_status(data)
-
-    return render_template(
-        "index.html",
-        set_topic=MQTT_SET_TOPIC,
-        state_topic=MQTT_STATE_TOPIC,
-        avail_topic=MQTT_AVAIL_TOPIC,
-        broker_online=data["broker_online"],
-        device_status=device_status,
-        last_state=data["last_state_text"],
-        last_error=data["last_error"],
-        last_seen=format_last_seen(data["last_update_ts"]),
-        events=data["events"][:12],
-    )
-
-
-@app.get("/api/status")
-def api_status():
-    data = get_runtime_copy()
-    device_status = compute_device_status(data)
-    return jsonify(
-        {
-            "broker_online": data["broker_online"],
-            "device_status": device_status,
-            "last_state": data["last_state_text"],
-            "last_error": data["last_error"],
-            "last_seen": format_last_seen(data["last_update_ts"]),
-            "events": data["events"][:12],
-            "set_topic": MQTT_SET_TOPIC,
-            "state_topic": MQTT_STATE_TOPIC,
-            "avail_topic": MQTT_AVAIL_TOPIC,
-        }
-    )
-
-
-@app.post("/toggle")
-def toggle():
-    ok, msg, denied = publish_payload({"state": "TOGGLE"})
-    handle_result("TOGGLE", ok, msg, denied)
-    return redirect(url_for("index"))
-
-
-@app.post("/on")
-def turn_on():
-    ok, msg, denied = publish_payload({"state": "ON"})
-    handle_result("ON", ok, msg, denied)
-    return redirect(url_for("index"))
-
-
-@app.post("/off")
-def turn_off():
-    ok, msg, denied = publish_payload({"state": "OFF"})
-    handle_result("OFF", ok, msg, denied)
-    return redirect(url_for("index"))
-
-
-@app.get("/health")
-def health():
-    data = get_runtime_copy()
-    return {
-        "ok": True,
-        "broker_online": data["broker_online"],
-        "device_status": compute_device_status(data),
-        "last_state": data["last_state_text"],
-        "last_error": data["last_error"],
-    }
-
+        thread = threading.Thread(target=subscriber_worker, daemon=True, name="mqtt-subscriber")
+        thread.start()
+        update_runtime(subscriber_started=True)
+        add_event("info", "Suscriptor MQTT iniciado")
 
 
 def publish_to_topic(topic: str, payload: dict[str, Any]) -> tuple[bool, str, bool]:
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"web-ui-pub-{int(time.time())}")
+    client = mqtt.Client(
+        mqtt.CallbackAPIVersion.VERSION2,
+        client_id=f"web-ui-pub-{int(time.time() * 1000)}",
+    )
     mqtt_auth(client)
 
     try:
@@ -366,8 +278,96 @@ def publish_to_topic(topic: str, payload: dict[str, Any]) -> tuple[bool, str, bo
         add_event("error", f"Excepción publicando en {topic}: {error_msg}")
         return False, error_msg, is_access_denied(error_msg)
 
+
 def publish_payload(payload: dict[str, Any]) -> tuple[bool, str, bool]:
     return publish_to_topic(MQTT_SET_TOPIC, payload)
+
+
+def handle_result(action: str, ok: bool, msg: str, denied: bool) -> None:
+    if denied:
+        flash(f"{action}: 🔒 ACCESO DENEGADO")
+    else:
+        flash(f"{action}: {'OK' if ok else 'ERROR'} - {msg}")
+
+
+def is_attack2_running() -> bool:
+    with attack2_lock:
+        return attack2_active
+
+
+def set_attack2_running(value: bool) -> None:
+    global attack2_active
+    with attack2_lock:
+        attack2_active = value
+
+
+@app.before_request
+def startup() -> None:
+    ensure_subscriber_started()
+
+
+@app.route("/")
+def index():
+    data = get_runtime_copy()
+    device_status = compute_device_status(data)
+
+    return render_template(
+        "index.html",
+        set_topic=MQTT_SET_TOPIC,
+        state_topic=MQTT_STATE_TOPIC,
+        avail_topic=MQTT_AVAIL_TOPIC,
+        button_topic=MQTT_BUTTON_TOPIC,
+        broker_online=data["broker_online"],
+        device_status=device_status,
+        last_state=data["last_state_text"],
+        last_error=data["last_error"],
+        last_seen=format_last_seen(data["last_update_ts"]),
+        events=data["events"][:12],
+        attack2_active=is_attack2_running(),
+    )
+
+
+@app.get("/api/status")
+def api_status():
+    data = get_runtime_copy()
+    device_status = compute_device_status(data)
+    return jsonify(
+        {
+            "broker_online": data["broker_online"],
+            "device_status": device_status,
+            "last_state": data["last_state_text"],
+            "last_error": data["last_error"],
+            "last_seen": format_last_seen(data["last_update_ts"]),
+            "events": data["events"][:12],
+            "set_topic": MQTT_SET_TOPIC,
+            "state_topic": MQTT_STATE_TOPIC,
+            "avail_topic": MQTT_AVAIL_TOPIC,
+            "button_topic": MQTT_BUTTON_TOPIC,
+            "attack2_active": is_attack2_running(),
+        }
+    )
+
+
+@app.post("/toggle")
+def toggle():
+    ok, msg, denied = publish_payload({"state": "TOGGLE"})
+    handle_result("TOGGLE", ok, msg, denied)
+    return redirect(url_for("index"))
+
+
+@app.post("/on")
+def turn_on():
+    ok, msg, denied = publish_payload({"state": "ON"})
+    handle_result("ON", ok, msg, denied)
+    return redirect(url_for("index"))
+
+
+@app.post("/off")
+def turn_off():
+    ok, msg, denied = publish_payload({"state": "OFF"})
+    handle_result("OFF", ok, msg, denied)
+    return redirect(url_for("index"))
+
 
 @app.post("/button-single")
 def button_single():
@@ -376,43 +376,63 @@ def button_single():
     return redirect(url_for("index"))
 
 
-def attack2_worker():
-    global attack2_active
+@app.get("/health")
+def health():
+    data = get_runtime_copy()
+    return {
+        "ok": True,
+        "broker_online": data["broker_online"],
+        "device_status": compute_device_status(data),
+        "last_state": data["last_state_text"],
+        "last_error": data["last_error"],
+        "attack2_active": is_attack2_running(),
+    }
+
+
+def attack2_worker() -> None:
+    global attack2_thread
 
     add_event("warn", "🚨 ATAQUE 2 INICIADO")
 
-    while attack2_active:
-        try:
-            # Forzamos OFF constantemente
-            publish_to_topic(MQTT_SET_TOPIC, {"state": "OFF"})
-            time.sleep(0.1)  # frecuencia alta (ajustable)
-        except Exception as e:
-            add_event("error", f"Ataque2 error: {e}")
-            break
+    try:
+        while is_attack2_running():
+            ok, msg, denied = publish_to_topic(MQTT_SET_TOPIC, {"state": "OFF"})
+            if not ok and denied:
+                add_event("warn", "Ataque 2 bloqueado por permisos MQTT")
+                break
+            time.sleep(ATTACK2_INTERVAL)
+    except Exception as exc:
+        add_event("error", f"Ataque2 error: {exc}")
+    finally:
+        set_attack2_running(False)
+        with attack2_lock:
+            attack2_thread = None
+        add_event("info", "🛑 ATAQUE 2 DETENIDO")
 
-    add_event("info", "🛑 ATAQUE 2 DETENIDO")
 
 @app.post("/attack2/start")
 def attack2_start():
-    global attack2_active, attack2_thread
+    global attack2_thread
 
-    if not attack2_active:
-        attack2_active = True
-        attack2_thread = threading.Thread(target=attack2_worker, daemon=True)
-        attack2_thread.start()
-        flash("ATAQUE 2 ACTIVADO 💥")
-    else:
-        flash("ATAQUE 2 ya activo")
+    with attack2_lock:
+        already_running = attack2_active and attack2_thread is not None and attack2_thread.is_alive()
+        if not already_running:
+            set_attack2_running(True)
+            attack2_thread = threading.Thread(target=attack2_worker, daemon=True, name="attack2-worker")
+            attack2_thread.start()
+            flash("ATAQUE 2 ACTIVADO 💥")
+        else:
+            flash("ATAQUE 2 ya activo")
 
     return redirect(url_for("index"))
 
 
 @app.post("/attack2/stop")
 def attack2_stop():
-    global attack2_active
-    attack2_active = False
+    set_attack2_running(False)
     flash("ATAQUE 2 DESACTIVADO 🛑")
     return redirect(url_for("index"))
+
 
 if __name__ == "__main__":
     ensure_subscriber_started()
