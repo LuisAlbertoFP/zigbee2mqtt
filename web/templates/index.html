@@ -353,6 +353,15 @@
 
     refreshStatus();
     setInterval(refreshStatus, 2000);
+
+    setTimeout(() => {
+    document.querySelectorAll('.flash-wrap').forEach(el => {
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-8px)';
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 5000);
   </script>
 </body>
 </html>
