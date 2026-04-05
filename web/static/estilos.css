@@ -720,3 +720,142 @@
   flex: 1;
   overflow-wrap: anywhere;
 }
+
+/* ===== Demo Pro ===== */
+
+.terminal-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.log-header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-pill,
+.log-toggle {
+  border: 1px solid var(--line);
+  background: rgba(6,12,8,.75);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.live-pill {
+  color: #d9ffe7;
+  border-color: rgba(60,255,143,.32);
+  box-shadow: 0 0 0 1px rgba(60,255,143,.06), 0 0 14px rgba(60,255,143,.08);
+}
+
+.live-pill::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px rgba(60,255,143,.35);
+  animation: pulse-dot 1.4s infinite;
+  vertical-align: middle;
+}
+
+.live-pill.offline {
+  color: #ffd6de;
+  border-color: rgba(255,77,109,.32);
+}
+
+.live-pill.offline::before {
+  background: var(--red);
+  box-shadow: 0 0 10px rgba(255,77,109,.35);
+  animation: none;
+}
+
+.log-toggle {
+  cursor: pointer;
+  transition: .16s ease;
+}
+
+.log-toggle:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.log-toggle.off {
+  color: #ffeec3;
+  border-color: rgba(255,200,87,.28);
+}
+
+@keyframes pulse-dot {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: .55; transform: scale(.82); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.log-body {
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.log-body.flash-new {
+  box-shadow: inset 0 0 0 1px rgba(60,255,143,.08);
+}
+
+.log-line {
+  transition: background .25s ease, transform .25s ease;
+}
+
+.log-line.new {
+  animation: log-pop .35s ease;
+}
+
+.log-line:hover {
+  background: rgba(255,255,255,.025);
+}
+
+@keyframes log-pop {
+  0% {
+    background: rgba(60,255,143,.14);
+    transform: translateX(4px);
+  }
+  100% {
+    background: transparent;
+    transform: translateX(0);
+  }
+}
+
+.log-time {
+  opacity: .88;
+}
+
+.log-msg {
+  line-height: 1.45;
+}
+
+@media (max-width: 700px) {
+  .log-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .log-header-right {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

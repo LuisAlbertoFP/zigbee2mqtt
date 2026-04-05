@@ -24,18 +24,27 @@
           <img class="brand-logo" src="{{ url_for('static', filename='logotipo.png') }}" alt="Logo">
           <div class="brand-text">
             <h1>{{ app_name }}</h1>
-            <p>Panel de control MQTT con control remoto, emulación de botón y ataque lógico continuado.</p>
+            <p>Panel de control MQTT para demos visuales con control remoto, emulación de botón y ataque lógico continuado.</p>
           </div>
         </div>
-        <div class="terminal-line">SET={{ set_topic }} | STATE={{ state_topic }} | BUTTON={{ button_topic }}</div>
+        <div class="terminal-line" id="terminal-line">SET={{ set_topic }} | STATE={{ state_topic }} | BUTTON={{ button_topic }}</div>
       </div>
 
       <div class="hero-card hero-status">
         <div class="status-title">Estado rápido</div>
         <div class="status-badges">
-          <div class="badge {{ 'ok' if broker_online else 'error' }}"><span class="dot"></span> Broker {{ 'ONLINE' if broker_online else 'OFFLINE' }}</div>
-          <div class="badge {{ 'ok' if device_status == 'online' else ('error' if device_status == 'offline' else 'warn') }}"><span class="dot"></span> Dispositivo {{ device_status|upper }}</div>
-          <div class="badge {{ 'error' if attack2_active else 'ok' }}"><span class="dot"></span> Ataque 2 {{ 'ACTIVO' if attack2_active else 'PARADO' }}</div>
+          <div class="badge {{ 'ok' if broker_online else 'error' }}" id="badge-broker">
+            <span class="dot"></span>
+            <span id="broker-text">Broker {{ 'ONLINE' if broker_online else 'OFFLINE' }}</span>
+          </div>
+          <div class="badge {{ 'ok' if device_status == 'online' else ('error' if device_status == 'offline' else 'warn') }}" id="badge-device">
+            <span class="dot"></span>
+            <span id="device-text">Dispositivo {{ device_status|upper }}</span>
+          </div>
+          <div class="badge {{ 'error' if attack2_active else 'ok' }}" id="badge-attack2">
+            <span class="dot"></span>
+            <span id="attack2-text">Ataque 2 {{ 'ACTIVO' if attack2_active else 'PARADO' }}</span>
+          </div>
         </div>
       </div>
     </section>
@@ -65,10 +74,10 @@
             </div>
             <div class="actions-grid">
               <form class="action-form" method="post" action="{{ url_for('main.turn_on') }}">
-                <button class="btn btn-on" type="submit"><span class="btn-content"><span class="btn-title">Encender</span><span class="btn-subtitle">Publica {"state":"ON"}</span></span></button>
+                <button class="btn btn-on" type="submit"><span class="btn-content"><span class="btn-title">Encender</span><span class="btn-subtitle">Publica <code>{"state":"ON"}</code></span></span></button>
               </form>
               <form class="action-form" method="post" action="{{ url_for('main.turn_off') }}">
-                <button class="btn btn-off" type="submit"><span class="btn-content"><span class="btn-title">Apagar</span><span class="btn-subtitle">Publica {"state":"OFF"}</span></span></button>
+                <button class="btn btn-off" type="submit"><span class="btn-content"><span class="btn-title">Apagar</span><span class="btn-subtitle">Publica <code>{"state":"OFF"}</code></span></span></button>
               </form>
               <form class="action-form" method="post" action="{{ url_for('main.toggle') }}">
                 <button class="btn btn-toggle" type="submit"><span class="btn-content"><span class="btn-title">Toggle</span><span class="btn-subtitle">Alterna el estado del dispositivo</span></span></button>
@@ -107,10 +116,10 @@
             </div>
             <div class="actions-grid">
               <form class="action-form" method="post" action="{{ url_for('main.attack2_start') }}">
-                <button class="btn btn-attack" type="submit" {{ 'disabled' if attack2_active else '' }}><span class="btn-content"><span class="btn-title">Iniciar ataque</span><span class="btn-subtitle">Fuerza OFF constantemente</span></span></button>
+                <button class="btn btn-attack" id="btn-attack-start" type="submit" {{ 'disabled' if attack2_active else '' }}><span class="btn-content"><span class="btn-title">Iniciar ataque</span><span class="btn-subtitle">Fuerza OFF constantemente</span></span></button>
               </form>
               <form class="action-form" method="post" action="{{ url_for('main.attack2_stop') }}">
-                <button class="btn btn-stop-attack" type="submit"><span class="btn-content"><span class="btn-title">Detener ataque</span><span class="btn-subtitle">Detiene el hilo de ataque</span></span></button>
+                <button class="btn btn-stop-attack" id="btn-attack-stop" type="submit" {{ '' if attack2_active else 'disabled' }}><span class="btn-content"><span class="btn-title">Detener ataque</span><span class="btn-subtitle">Detiene el hilo de ataque</span></span></button>
               </form>
             </div>
             <div class="hint">Pensado para entorno controlado de demostración. No es un DoS de red: es una interferencia funcional sobre el topic de control.</div>
@@ -123,32 +132,37 @@
         <p>Estado observado por el suscriptor MQTT.</p>
 
         <div class="state-box">
-          <div class="state-main">{{ last_state }}</div>
-          <div class="state-sub">Última actualización: {{ last_seen }}</div>
+          <div class="state-main" id="last-state">{{ last_state }}</div>
+          <div class="state-sub">Última actualización: <span id="last-seen">{{ last_seen }}</span></div>
         </div>
 
         {% if last_error %}
-          <div class="error-box">{{ last_error }}</div>
+          <div class="error-box" id="last-error">{{ last_error }}</div>
+        {% else %}
+          <div class="error-box" id="last-error" style="display:none;"></div>
         {% endif %}
 
         <div class="meta">
-          <div class="meta-item"><span class="meta-label">Topic SET</span><span class="pill">{{ set_topic }}</span></div>
-          <div class="meta-item"><span class="meta-label">Topic STATE</span><span class="pill">{{ state_topic }}</span></div>
-          <div class="meta-item"><span class="meta-label">Topic AVAIL</span><span class="pill">{{ avail_topic }}</span></div>
-          <div class="meta-item"><span class="meta-label">Topic BUTTON</span><span class="pill">{{ button_topic }}</span></div>
+          <div class="meta-item"><span class="meta-label">Topic SET</span><span class="pill" id="set-topic">{{ set_topic }}</span></div>
+          <div class="meta-item"><span class="meta-label">Topic STATE</span><span class="pill" id="state-topic">{{ state_topic }}</span></div>
+          <div class="meta-item"><span class="meta-label">Topic AVAIL</span><span class="pill" id="avail-topic">{{ avail_topic }}</span></div>
+          <div class="meta-item"><span class="meta-label">Topic BUTTON</span><span class="pill" id="button-topic">{{ button_topic }}</span></div>
         </div>
-
       </div>
     </section>
 
     <section class="log-terminal">
       <div class="log-header">
         <span>LOGS EN TIEMPO REAL</span>
+        <div class="log-header-right">
+          <span class="live-pill" id="live-pill">LIVE</span>
+          <button type="button" class="log-toggle" id="autoscroll-toggle" aria-pressed="true">AUTO-SCROLL</button>
+        </div>
       </div>
-    
-      <div class="log-body">
+
+      <div class="log-body" id="log-body">
         {% for event in events %}
-          <div class="log-line {{ event.level }}">
+          <div class="log-line {{ event.level if event.level in ['ok','info','warn','error'] else 'info' }}">
             <span class="log-time">{{ event.ts|int }}</span>
             <span class="log-level">[{{ event.level|upper }}]</span>
             <span class="log-msg">{{ event.message }}</span>
@@ -167,6 +181,13 @@
   <script>
     const buttons = document.querySelectorAll('.tab-btn');
     const panels = document.querySelectorAll('.tab-panel');
+    const logBody = document.getElementById('log-body');
+    const livePill = document.getElementById('live-pill');
+    const autoScrollToggle = document.getElementById('autoscroll-toggle');
+
+    let previousSignature = '';
+    let autoScrollEnabled = true;
+
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         buttons.forEach(b => b.classList.remove('active'));
@@ -175,6 +196,157 @@
         document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
       });
     });
+
+    autoScrollToggle.addEventListener('click', () => {
+      autoScrollEnabled = !autoScrollEnabled;
+      autoScrollToggle.classList.toggle('off', !autoScrollEnabled);
+      autoScrollToggle.setAttribute('aria-pressed', String(autoScrollEnabled));
+      autoScrollToggle.textContent = autoScrollEnabled ? 'AUTO-SCROLL' : 'AUTO-SCROLL OFF';
+    });
+
+    function levelClass(level) {
+      return ['ok', 'info', 'warn', 'error'].includes(level) ? level : 'info';
+    }
+
+    function setBadgeState(el, stateClass, textEl, text) {
+      el.classList.remove('ok', 'warn', 'error');
+      el.classList.add(stateClass);
+      textEl.textContent = text;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text ?? '';
+      return div.innerHTML;
+    }
+
+    function eventSignature(events) {
+      return (events || []).map(e => `${Math.floor(e.ts || 0)}|${e.level || ''}|${e.message || ''}`).join('||');
+    }
+
+    function formatLogTime(event) {
+      if (event.ts_text) return event.ts_text;
+      if (typeof event.ts === 'number') return String(Math.floor(event.ts));
+      return '';
+    }
+
+    function flashLog() {
+      logBody.classList.remove('flash-new');
+      void logBody.offsetWidth;
+      logBody.classList.add('flash-new');
+    }
+
+    function renderEvents(events) {
+      const atBottom = logBody.scrollHeight - logBody.scrollTop - logBody.clientHeight < 24;
+      const signature = eventSignature(events);
+      const changed = signature !== previousSignature;
+
+      if (!events || events.length === 0) {
+        logBody.innerHTML = `
+          <div class="log-line info">
+            <span class="log-msg">Sin eventos todavía...</span>
+          </div>
+        `;
+        previousSignature = '';
+        return;
+      }
+
+      logBody.innerHTML = events.map(event => `
+        <div class="log-line ${levelClass(event.level)} ${changed ? 'new' : ''}">
+          <span class="log-time">${escapeHtml(formatLogTime(event))}</span>
+          <span class="log-level">[${escapeHtml(String(event.level || 'info').toUpperCase())}]</span>
+          <span class="log-msg">${escapeHtml(event.message || '')}</span>
+        </div>
+      `).join('');
+
+      if (changed) {
+        flashLog();
+      }
+
+      if (autoScrollEnabled && (changed || atBottom)) {
+        logBody.scrollTop = 0;
+      }
+
+      previousSignature = signature;
+    }
+
+    async function refreshStatus() {
+      try {
+        const res = await fetch('/api/status', {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store'
+        });
+
+        if (!res.ok) {
+          throw new Error('HTTP ' + res.status);
+        }
+
+        const data = await res.json();
+        livePill.classList.remove('offline');
+
+        const brokerBadge = document.getElementById('badge-broker');
+        const brokerText = document.getElementById('broker-text');
+        setBadgeState(
+          brokerBadge,
+          data.broker_online ? 'ok' : 'error',
+          brokerText,
+          `Broker ${data.broker_online ? 'ONLINE' : 'OFFLINE'}`
+        );
+
+        const deviceBadge = document.getElementById('badge-device');
+        const deviceText = document.getElementById('device-text');
+        const deviceClass =
+          data.device_status === 'online' ? 'ok' :
+          data.device_status === 'offline' ? 'error' : 'warn';
+        setBadgeState(
+          deviceBadge,
+          deviceClass,
+          deviceText,
+          `Dispositivo ${(data.device_status || 'unknown').toUpperCase()}`
+        );
+
+        const attackBadge = document.getElementById('badge-attack2');
+        const attackText = document.getElementById('attack2-text');
+        const attackActive = !!data.attack2_active;
+        setBadgeState(
+          attackBadge,
+          attackActive ? 'error' : 'ok',
+          attackText,
+          `Ataque 2 ${attackActive ? 'ACTIVO' : 'PARADO'}`
+        );
+
+        document.getElementById('last-state').textContent = data.last_state || 'Sin datos';
+        document.getElementById('last-seen').textContent = data.last_seen || 'Nunca';
+
+        const errorBox = document.getElementById('last-error');
+        if (data.last_error) {
+          errorBox.style.display = '';
+          errorBox.textContent = data.last_error;
+        } else {
+          errorBox.style.display = 'none';
+          errorBox.textContent = '';
+        }
+
+        document.getElementById('set-topic').textContent = data.set_topic || '';
+        document.getElementById('state-topic').textContent = data.state_topic || '';
+        document.getElementById('avail-topic').textContent = data.avail_topic || '';
+        document.getElementById('button-topic').textContent = data.button_topic || '';
+        document.getElementById('terminal-line').textContent =
+          `SET=${data.set_topic || ''} | STATE=${data.state_topic || ''} | BUTTON=${data.button_topic || ''}`;
+
+        document.getElementById('btn-attack-start').disabled = attackActive;
+        document.getElementById('btn-attack-stop').disabled = !attackActive;
+
+        renderEvents(data.events || []);
+      } catch (err) {
+        livePill.classList.add('offline');
+        console.error('Error actualizando /api/status:', err);
+      }
+    }
+
+    refreshStatus();
+    setInterval(refreshStatus, 2000);
   </script>
 </body>
 </html>
