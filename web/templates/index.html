@@ -2,363 +2,172 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>MQTT Control Pro // Hacker Dashboard</title>
+  <title>{{ app_name }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
-
 </head>
 <body>
   <div class="wrap">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-wrap">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
-    <div class="hero">
+    <section class="hero">
       <div class="hero-card hero-main">
         <div class="brand">
-          <img src="{{ url_for('static', filename='logotipo.png') }}" alt="Centro Galego da Innovación da Formación Profesional" class="brand-logo">
+          <img class="brand-logo" src="{{ url_for('static', filename='logotipo.png') }}" alt="Logo">
           <div class="brand-text">
-            <h1>MQTT CONTROL PRO <br> HACKER DASHBOARD</h1>
+            <h1>{{ app_name }}</h1>
+            <p>Panel de control MQTT para demos visuales con control remoto, emulación de botón y ataque lógico continuado.</p>
           </div>
         </div>
-    
-        <div class="terminal-line">
-          root@mqtt-lab:~# monitor --live --topics --control --attack-scenarios
-        </div>
+        <div class="terminal-line">SET={{ set_topic }} | STATE={{ state_topic }} | BUTTON={{ button_topic }}</div>
       </div>
-    
+
       <div class="hero-card hero-status">
-        <div class="status-title">Estado del sistema</div>
+        <div class="status-title">Estado rápido</div>
         <div class="status-badges">
-          {% if broker_online %}
-            <span id="brokerBadge" class="badge ok"><span class="dot"></span> BROKER ONLINE</span>
-          {% else %}
-            <span id="brokerBadge" class="badge error"><span class="dot"></span> BROKER OFFLINE</span>
-          {% endif %}
-    
-          {% if device_status == "online" %}
-            <span id="deviceBadge" class="badge ok"><span class="dot"></span> DEVICE ONLINE</span>
-          {% elif device_status == "offline" %}
-            <span id="deviceBadge" class="badge error"><span class="dot"></span> DEVICE OFFLINE</span>
-          {% else %}
-            <span id="deviceBadge" class="badge warn"><span class="dot"></span> STATUS UNKNOWN</span>
-          {% endif %}
+          <div class="badge {{ 'ok' if broker_online else 'error' }}"><span class="dot"></span> Broker {{ 'ONLINE' if broker_online else 'OFFLINE' }}</div>
+          <div class="badge {{ 'ok' if device_status == 'online' else ('error' if device_status == 'offline' else 'warn') }}"><span class="dot"></span> Dispositivo {{ device_status|upper }}</div>
+          <div class="badge {{ 'error' if attack2_active else 'ok' }}"><span class="dot"></span> Ataque 2 {{ 'ACTIVO' if attack2_active else 'PARADO' }}</div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="flash-wrap">
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          {% for msg in messages %}
-            {% if "ACCESO DENEGADO" in msg %}
-              <div class="flash denied flash-item">🔒 {{ msg }}</div>
-            {% elif "OK" in msg %}
-              <div class="flash ok flash-item">✅ {{ msg }}</div>
-            {% else %}
-              <div class="flash error flash-item">❌ {{ msg }}</div>
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
-    </div>
+    <section class="grid">
+      <div class="card">
+        <h2>Comandos</h2>
+        <p>Acciones directas contra el topic del dispositivo y emulación MQTT del botón.</p>
 
-    <div class="grid">
-      <section class="card">
-        <h2>Command Console</h2>
         <div class="tabs">
           <div class="tab-buttons">
-            <button class="tab-btn active" type="button" data-tab="tab-control">Control</button>
-            <button class="tab-btn" type="button" data-tab="tab-emulation">Emulación</button>
-            <button class="tab-btn" type="button" data-tab="tab-attack">Ataques</button>
+            <button class="tab-btn active" data-tab="control">Control</button>
+            <button class="tab-btn" data-tab="button">Botón</button>
+            <button class="tab-btn" data-tab="attack">Ataque</button>
           </div>
 
-          <div id="tab-control" class="tab-panel active">
+          <div class="tab-panel active" id="tab-control">
             <div class="panel-head">
               <div class="panel-head-left">
-                <div class="panel-icon">🎛️</div>
+                <div class="panel-icon">⚡</div>
                 <div>
-                  <h3>Control normal</h3>
-                  <p>Comandos directos al actuador MQTT</p>
+                  <h3>Control del actuador</h3>
+                  <p>Publica en {{ set_topic }}</p>
                 </div>
               </div>
-              <span class="panel-badge">Operate</span>
+              <div class="panel-badge">MQTT SET</div>
             </div>
-
             <div class="actions-grid">
-              <form method="post" action="/on" class="action-form">
-                <button class="btn btn-on" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🟢 ENCENDER</span>
-                    <span class="btn-subtitle">Publica ON</span>
-                  </span>
-                </button>
+              <form class="action-form" method="post" action="{{ url_for('main.turn_on') }}">
+                <button class="btn btn-on" type="submit"><span class="btn-content"><span class="btn-title">Encender</span><span class="btn-subtitle">Publica {"state":"ON"}</span></span></button>
               </form>
-
-              <form method="post" action="/off" class="action-form">
-                <button class="btn btn-off" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🔴 APAGAR</span>
-                    <span class="btn-subtitle">Publica OFF</span>
-                  </span>
-                </button>
+              <form class="action-form" method="post" action="{{ url_for('main.turn_off') }}">
+                <button class="btn btn-off" type="submit"><span class="btn-content"><span class="btn-title">Apagar</span><span class="btn-subtitle">Publica {"state":"OFF"}</span></span></button>
               </form>
-
-              <form method="post" action="/toggle" class="action-form">
-                <button class="btn btn-toggle" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🔄 TOGGLE</span>
-                    <span class="btn-subtitle">Alterna el estado</span>
-                  </span>
-                </button>
+              <form class="action-form" method="post" action="{{ url_for('main.toggle') }}">
+                <button class="btn btn-toggle" type="submit"><span class="btn-content"><span class="btn-title">Toggle</span><span class="btn-subtitle">Alterna el estado del dispositivo</span></span></button>
               </form>
             </div>
           </div>
 
-          <div id="tab-emulation" class="tab-panel">
+          <div class="tab-panel" id="tab-button">
             <div class="panel-head">
               <div class="panel-head-left">
-                <div class="panel-icon">🧪</div>
+                <div class="panel-icon">🖲️</div>
                 <div>
-                  <h3>Emulación</h3>
-                  <p>Simulación de interacción física</p>
+                  <h3>Emulación de botón</h3>
+                  <p>Publica en {{ button_topic }}</p>
                 </div>
               </div>
-              <span class="panel-badge">Simulate</span>
+              <div class="panel-badge">BUTTON MQTT</div>
             </div>
-
             <div class="actions-grid">
-              <form method="post" action="/button-single" class="action-form">
-                <button class="btn btn-emulate" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🔘 EMULAR BOTÓN</span>
-                    <span class="btn-subtitle">Pulso simulado</span>
-                  </span>
-                </button>
+              <form class="action-form" method="post" action="{{ url_for('main.button_single') }}">
+                <button class="btn btn-emulate" type="submit"><span class="btn-content"><span class="btn-title">Single</span><span class="btn-subtitle">Emula acción single del pulsador</span></span></button>
               </form>
             </div>
           </div>
 
-          <div id="tab-attack" class="tab-panel">
+          <div class="tab-panel" id="tab-attack">
             <div class="panel-head">
               <div class="panel-head-left">
-                <div class="panel-icon">⚠️</div>
+                <div class="panel-icon">💥</div>
                 <div>
-                  <h3>Ataques</h3>
-                  <p>Activación y parada de secuencias</p>
+                  <h3>Ataque 2</h3>
+                  <p>Flood lógico continuo con OFF sobre {{ set_topic }}</p>
                 </div>
               </div>
-              <span class="panel-badge">Attack</span>
+              <div class="panel-badge">DEMO</div>
             </div>
-
             <div class="actions-grid">
-              <form method="post" action="/attack2/start" class="action-form">
-                <button class="btn btn-attack" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">💥 ATAQUE 2 ON</span>
-                    <span class="btn-subtitle">Activa la rutina</span>
-                  </span>
-                </button>
+              <form class="action-form" method="post" action="{{ url_for('main.attack2_start') }}">
+                <button class="btn btn-attack" type="submit" {{ 'disabled' if attack2_active else '' }}><span class="btn-content"><span class="btn-title">Iniciar ataque</span><span class="btn-subtitle">Fuerza OFF constantemente</span></span></button>
               </form>
-
-              <form method="post" action="/attack2/stop" class="action-form">
-                <button class="btn btn-stop-attack" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">🛑 ATAQUE 2 OFF</span>
-                    <span class="btn-subtitle">Detiene la secuencia</span>
-                  </span>
-                </button>
+              <form class="action-form" method="post" action="{{ url_for('main.attack2_stop') }}">
+                <button class="btn btn-stop-attack" type="submit"><span class="btn-content"><span class="btn-title">Detener ataque</span><span class="btn-subtitle">Detiene el hilo de ataque</span></span></button>
               </form>
             </div>
+            <div class="hint">Pensado para entorno controlado de demostración. No es un DoS de red: es una interferencia funcional sobre el topic de control.</div>
           </div>
         </div>
+      </div>
 
-        <div class="hint">
-          Si el broker rechaza una orden por permisos, el panel mostrará <strong>ACCESO DENEGADO</strong>.
-        </div>
-
-        <h2 style="margin-top:12px;">Event Log</h2>
-        <p>Registro reciente de actividad del panel y del dispositivo.</p>
-
-        <div id="events" class="events">
-          {% for ev in events %}
-            <div class="event">
-              <div class="event-top">
-                <span class="tag {{ ev.level }}">{{ ev.level|upper }}</span>
-                <span>{{ ev.ts }}</span>
-              </div>
-              <div class="event-msg">{{ ev.message }}</div>
-            </div>
-          {% endfor %}
-        </div>
-      </section>
-
-      <aside class="card">
-        <h2>System State</h2>
-        <p>Telemetría del broker y dispositivo.</p>
+      <div class="card">
+        <h2>Telemetría</h2>
+        <p>Estado observado por el suscriptor MQTT.</p>
 
         <div class="state-box">
-          <div id="lastState" class="state-main">{{ last_state }}</div>
-          <div id="lastSeen" class="state-sub">Última actualización: {{ last_seen }}</div>
+          <div class="state-main">{{ last_state }}</div>
+          <div class="state-sub">Última actualización: {{ last_seen }}</div>
         </div>
 
         {% if last_error %}
-          <div id="lastError" class="error-box">
-            <strong>Último error:</strong><br>
-            {{ last_error }}
-          </div>
-        {% else %}
-          <div id="lastError" class="error-box" style="display:none;"></div>
+          <div class="error-box">{{ last_error }}</div>
         {% endif %}
 
         <div class="meta">
-          <div class="meta-item">
-            <span class="meta-label">Topic de escritura</span>
-            <span id="setTopic" class="pill">{{ set_topic }}</span>
-          </div>
-
-          <div class="meta-item">
-            <span class="meta-label">Topic de estado</span>
-            <span id="stateTopic" class="pill">{{ state_topic }}</span>
-          </div>
+          <div class="meta-item"><span class="meta-label">Topic SET</span><span class="pill">{{ set_topic }}</span></div>
+          <div class="meta-item"><span class="meta-label">Topic STATE</span><span class="pill">{{ state_topic }}</span></div>
+          <div class="meta-item"><span class="meta-label">Topic AVAIL</span><span class="pill">{{ avail_topic }}</span></div>
+          <div class="meta-item"><span class="meta-label">Topic BUTTON</span><span class="pill">{{ button_topic }}</span></div>
         </div>
 
-        <div class="hint">
-          AUTH MODE: SIN usuario MQTT
+        <div class="events">
+          {% for event in events %}
+            <div class="event">
+              <div class="event-top">
+                <span class="tag {{ event.level if event.level in ['ok','info','warn','error'] else 'info' }}">{{ event.level }}</span>
+                <span>{{ event.ts|int }}</span>
+              </div>
+              <div class="event-msg">{{ event.message }}</div>
+            </div>
+          {% else %}
+            <div class="event"><div class="event-msg">Sin eventos todavía.</div></div>
+          {% endfor %}
         </div>
-      </aside>
-    </div>
+      </div>
+    </section>
 
-    <div class="footer">
-      MQTT CONTROL PRO // LIVE DASHBOARD
-    </div>
+    <div class="footer">Refactor modular Flask + MQTT</div>
   </div>
 
   <script>
-    function setBadge(el, state, texts) {
-      el.className = 'badge ' + state;
-      el.innerHTML = '<span class="dot"></span> ' + texts[state];
-    }
-
-    function renderEvents(events) {
-      const wrap = document.getElementById('events');
-      wrap.innerHTML = '';
-
-      events.forEach((ev) => {
-        const row = document.createElement('div');
-        row.className = 'event';
-
-        const top = document.createElement('div');
-        top.className = 'event-top';
-
-        const tag = document.createElement('span');
-        tag.className = 'tag ' + (ev.level || 'info');
-        tag.textContent = (ev.level || 'info').toUpperCase();
-
-        const ts = document.createElement('span');
-        const d = new Date((ev.ts || 0) * 1000);
-        ts.textContent = isNaN(d.getTime()) ? '' : d.toLocaleTimeString();
-
-        top.appendChild(tag);
-        top.appendChild(ts);
-
-        const msg = document.createElement('div');
-        msg.className = 'event-msg';
-        msg.textContent = ev.message || '';
-
-        row.appendChild(top);
-        row.appendChild(msg);
-        wrap.appendChild(row);
-      });
-    }
-
-    async function refreshStatus() {
-      try {
-        const res = await fetch('/api/status', { cache: 'no-store' });
-        const data = await res.json();
-
-        const brokerBadge = document.getElementById('brokerBadge');
-        const deviceBadge = document.getElementById('deviceBadge');
-
-        setBadge(
-          brokerBadge,
-          data.broker_online ? 'ok' : 'error',
-          {
-            ok: 'BROKER ONLINE',
-            error: 'BROKER OFFLINE',
-            warn: 'BROKER'
-          }
-        );
-
-        let deviceState = 'warn';
-        if (data.device_status === 'online') deviceState = 'ok';
-        else if (data.device_status === 'offline') deviceState = 'error';
-
-        setBadge(
-          deviceBadge,
-          deviceState,
-          {
-            ok: 'DEVICE ONLINE',
-            error: 'DEVICE OFFLINE',
-            warn: 'STATUS UNKNOWN'
-          }
-        );
-
-        document.getElementById('lastState').textContent = data.last_state || 'Sin datos';
-        document.getElementById('lastSeen').textContent = 'Última actualización: ' + (data.last_seen || 'Nunca');
-
-        const err = document.getElementById('lastError');
-        if (data.last_error) {
-          err.style.display = 'block';
-          err.innerHTML = '<strong>Último error:</strong><br>' + data.last_error;
-        } else {
-          err.style.display = 'none';
-          err.innerHTML = '';
-        }
-
-        renderEvents(data.events || []);
-      } catch (e) {
-        console.error('Error actualizando estado', e);
-      }
-    }
-
-    function initTabs() {
-      const buttons = document.querySelectorAll('.tab-btn');
-      const panels = document.querySelectorAll('.tab-panel');
-
-      buttons.forEach((button) => {
-        button.addEventListener('click', () => {
-          const target = button.dataset.tab;
-
-          buttons.forEach((b) => b.classList.remove('active'));
-          panels.forEach((p) => p.classList.remove('active'));
-
-          button.classList.add('active');
-          document.getElementById(target).classList.add('active');
-        });
-      });
-    }
-
-    setTimeout(() => {
-      document.querySelectorAll('.flash-item').forEach((el) => {
-        el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(-4px)';
-        setTimeout(() => el.remove(), 400);
-      });
-    }, 4500);
-
-    document.querySelectorAll('.action-form').forEach((form) => {
-      form.addEventListener('submit', () => {
-        const button = form.querySelector('button');
-        if (button) {
-          button.disabled = true;
-          button.innerHTML = '<span class="btn-content"><span class="btn-title">⏳ EXECUTING...</span><span class="btn-subtitle">Procesando comando</span></span>';
-        }
+    const buttons = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
       });
     });
-
-    initTabs();
-    refreshStatus();
-    setInterval(refreshStatus, 3000);
   </script>
 </body>
 </html>
