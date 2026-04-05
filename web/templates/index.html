@@ -24,7 +24,7 @@
           <img class="brand-logo" src="{{ url_for('static', filename='logotipo.png') }}" alt="Logo">
           <div class="brand-text">
             <h1>{{ app_name }}</h1>
-            <p>Panel de control MQTT para demos visuales con control remoto, emulación de botón y ataque lógico continuado.</p>
+            <p>Panel de control MQTT con control remoto, emulación de botón y ataque lógico continuado.</p>
           </div>
         </div>
         <div class="terminal-line" id="terminal-line">SET={{ set_topic }} | STATE={{ state_topic }} | BUTTON={{ button_topic }}</div>
@@ -327,10 +327,17 @@
           errorBox.textContent = '';
         }
 
-        document.getElementById('set-topic').textContent = data.set_topic || '';
-        document.getElementById('state-topic').textContent = data.state_topic || '';
-        document.getElementById('avail-topic').textContent = data.avail_topic || '';
-        document.getElementById('button-topic').textContent = data.button_topic || '';
+        const setEl = document.getElementById('set-topic');
+        if (setEl) setEl.textContent = data.set_topic || '';
+
+        const stateEl = document.getElementById('state-topic');
+        if (stateEl) stateEl.textContent = data.state_topic || '';
+
+        const availEl = document.getElementById('avail-topic');
+        if (availEl) availEl.textContent = data.avail_topic || '';
+
+        const buttonEl = document.getElementById('button-topic');
+        if (buttonEl) buttonEl.textContent = data.button_topic || '';
         document.getElementById('terminal-line').textContent =
           `SET=${data.set_topic || ''} | STATE=${data.state_topic || ''} | BUTTON=${data.button_topic || ''}`;
 
