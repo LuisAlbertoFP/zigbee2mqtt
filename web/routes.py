@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, url_for
 
-from attacks import start_attack2, stop_attack2
+from attacks import start_attack2, stop_attack2, start_attack3, stop_attack3
 from config import MQTT_AVAIL_TOPIC, MQTT_BUTTON_TOPIC, MQTT_SET_TOPIC, MQTT_STATE_TOPIC
 from mqtt_service import ensure_subscriber_started, publish_button_single, publish_payload
 from state import get_runtime_copy, is_attack2_running
@@ -102,6 +102,19 @@ def attack2_start():
 @bp.post('/attack2/stop')
 def attack2_stop():
     flash(stop_attack2(), 'warn')
+    return redirect(url_for('main.index'))
+
+
+@bp.post('/attack3/start')
+def attack3_start():
+    started, msg = start_attack3()
+    flash(msg, 'ok' if started else 'warn')
+    return redirect(url_for('main.index'))
+
+
+@bp.post('/attack3/stop')
+def attack3_stop():
+    flash(stop_attack3(), 'warn')
     return redirect(url_for('main.index'))
 
 

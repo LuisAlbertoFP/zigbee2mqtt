@@ -7,6 +7,7 @@ from config import MAX_EVENTS
 state_lock = threading.Lock()
 subscriber_lock = threading.Lock()
 attack2_lock = threading.RLock()
+attack3_lock = threading.RLock()
 
 runtime_state: dict[str, Any] = {
     'broker_online': False,
@@ -64,3 +65,26 @@ def set_attack2_thread(thread: threading.Thread | None) -> None:
     global attack2_thread
     with attack2_lock:
         attack2_thread = thread
+###################################
+
+
+def is_attack3_running() -> bool:
+    with attack3_lock:
+        return attack3_active
+
+
+def set_attack3_running(value: bool) -> None:
+    global attack3_active
+    with attack3_lock:
+        attack3_active = value
+
+
+def get_attack3_thread() -> threading.Thread | None:
+    with attack3_lock:
+        return attack3_thread
+
+
+def set_attack3_thread(thread: threading.Thread | None) -> None:
+    global attack3_thread
+    with attack3_lock:
+        attack3_thread = thread
