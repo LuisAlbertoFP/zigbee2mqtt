@@ -8,44 +8,37 @@ SRC_DIR="/opt/source"
 CACHE_DIR="/opt/cache"
 APP_DIR="/app"
 
-APP_SRC_REL="${APP_SRC_REL:-web/app.py}"
-HTML_SRC_REL="${HTML_SRC_REL:-web/templates/index.html}"
-STATIC_SRC_REL="${STATIC_SRC_REL:-web/static}"
+WEB_SRC_REL="${WEB_SRC_REL:-web}"
 
 log() {
   echo "[entrypoint] $*"
 }
 
+copy_web_dir() {
+  SRC_BASE="$1"
+
+  rm -rf "$APP_DIR"
+  mkdir -p "$APP_DIR"
+
+  cp -r "$SRC_BASE/$WEB_SRC_REL/." "$APP_DIR/"
+}
+
 copy_from_source() {
-  mkdir -p "$APP_DIR/templates" "$APP_DIR/static"
-  cp "$SRC_DIR/$APP_SRC_REL" "$APP_DIR/app.py"
-  cp "$SRC_DIR/$HTML_SRC_REL" "$APP_DIR/templates/index.html"
-  cp -r "$SRC_DIR/$STATIC_SRC_REL/." "$APP_DIR/static/"
+  copy_web_dir "$SRC_DIR"
 }
 
 copy_from_cache() {
-  mkdir -p "$APP_DIR/templates" "$APP_DIR/static"
-  cp "$CACHE_DIR/app.py" "$APP_DIR/app.py"
-  cp "$CACHE_DIR/index.html" "$APP_DIR/templates/index.html"
-  if [ -d "$CACHE_DIR/static" ]; then
-    cp -r "$CACHE_DIR/static/." "$APP_DIR/static/"
-  fi
+  copy_web_dir "$CACHE_DIR"
 }
 
 save_cache() {
+  rm -rf "$CACHE_DIR"
   mkdir -p "$CACHE_DIR"
-  cp "$APP_DIR/app.py" "$CACHE_DIR/app.py"
-  cp "$APP_DIR/templates/index.html" "$CACHE_DIR/index.html"
-
-  rm -rf "$CACHE_DIR/static"
-  mkdir -p "$CACHE_DIR/static"
-  if [ -d "$APP_DIR/static" ]; then
-    cp -r "$APP_DIR/static/." "$CACHE_DIR/static/"
-  fi
+  cp -r "$APP_DIR/." "$CACHE_DIR/"
 }
 
 have_cache() {
-  [ -f "$CACHE_DIR/app.py" ] && [ -f "$CACHE_DIR/index.html" ]
+  [ -f "$CACHE_DIR/app.py" ]
 }
 
 update_from_git() {
@@ -60,9 +53,8 @@ update_from_git() {
     git reset --hard "origin/$REPO_BRANCH"
   fi
 
-  [ -f "$SRC_DIR/$APP_SRC_REL" ]
-  [ -f "$SRC_DIR/$HTML_SRC_REL" ]
-  [ -d "$SRC_DIR/$STATIC_SRC_REL" ]
+  [ -d "$SRC_DIR/$WEB_SRC_REL" ]
+  [ -f "$SRC_DIR/$WEB_SRC_REL/app.py" ]
 }
 
 log "Iniciando actualización de código"
@@ -89,3 +81,4 @@ if [ "$UPDATED" -eq 0 ]; then
 fi
 
 log "Arrancando aplicación"
+exec python /app/app.py
