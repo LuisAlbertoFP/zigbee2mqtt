@@ -7,7 +7,7 @@ from routes import bp
 def create_app() -> Flask:
     app = Flask(__name__)
     app.secret_key = FLASK_SECRET_KEY
-    app.config['APP_NAME'] = 'MQTT Control Pro // Hacker Dashboard'
+    app.config['APP_NAME'] = 'MQTT Control Pro Hacker Dashboard'
     app.register_blueprint(bp)
     return app
 
