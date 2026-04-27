@@ -1,9 +1,10 @@
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
+import importlib
+import inspect
 
-from attacks import start_attack2, stop_attack2, start_attack3, stop_attack3
 from config import MQTT_AVAIL_TOPIC, MQTT_BUTTON_TOPIC, MQTT_SET_TOPIC, MQTT_STATE_TOPIC
 from mqtt_service import ensure_subscriber_started, publish_button_single, publish_payload
-from state import get_runtime_copy, is_attack2_running
+from state import get_runtime_copy
 from utils import compute_device_status, format_last_seen
 
 bp = Blueprint('main', __name__)
@@ -14,11 +15,44 @@ def startup() -> None:
     ensure_subscriber_started()
 
 
+def _is_ajax_request():
+    """Detecta si la petición es AJAX."""
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+
+def _get_attack_manager():
+    """Obtiene el gestor de ataques dinámicamente."""
+    try:
+        attacks_module = importlib.import_module('attacks')
+        return getattr(attacks_module, 'AttackManager', None)
+    except ImportError:
+        return None
+
+
+def _get_status_data():
+    """Obtiene y procesa los datos de estado comunes para múltiples endpoints."""
+    data = get_runtime_copy()
+    attack_manager = _get_attack_manager()
+    
+    # Obtener estados de todos los ataques dinámicamente
+    attack_states = {}
+    if attack_manager:
+        attack_states = attack_manager.get_all_attack_states()
+    
+    return {
+        'data': data,
+        'device_status': compute_device_status(data),
+        'last_seen': format_last_seen(data['last_update_ts']),
+        'events': data['events'][:12],
+        'attack_states': attack_states,
+    }
+
+
 @bp.route('/')
 def index():
-    data = get_runtime_copy()
-    device_status = compute_device_status(data)
-
+    status = _get_status_data()
+    data = status['data']
+    
     return render_template(
         'index.html',
         app_name=current_app.config.get('APP_NAME', 'MQTT Control Pro // Hacker Dashboard'),
@@ -27,105 +61,149 @@ def index():
         avail_topic=MQTT_AVAIL_TOPIC,
         button_topic=MQTT_BUTTON_TOPIC,
         broker_online=data['broker_online'],
-        device_status=device_status,
+        device_status=status['device_status'],
         last_state=data['last_state_text'],
         last_error=data['last_error'],
-        last_seen=format_last_seen(data['last_update_ts']),
-        events=data['events'][:12],
-        attack2_active=is_attack2_running(),
+        last_seen=status['last_seen'],
+        events=status['events'],
+        attack_states=status['attack_states'],
     )
 
 
 @bp.get('/api/status')
 def api_status():
-    data = get_runtime_copy()
-    device_status = compute_device_status(data)
-    return jsonify(
-        {
-            'broker_online': data['broker_online'],
-            'device_status': device_status,
-            'last_state': data['last_state_text'],
-            'last_error': data['last_error'],
-            'last_seen': format_last_seen(data['last_update_ts']),
-            'events': data['events'][:12],
-            'set_topic': MQTT_SET_TOPIC,
-            'state_topic': MQTT_STATE_TOPIC,
-            'avail_topic': MQTT_AVAIL_TOPIC,
-            'button_topic': MQTT_BUTTON_TOPIC,
-            'attack2_active': is_attack2_running(),
-        }
-    )
+    status = _get_status_data()
+    data = status['data']
+    
+    return jsonify({
+        'broker_online': data['broker_online'],
+        'device_status': status['device_status'],
+        'last_state': data['last_state_text'],
+        'last_error': data['last_error'],
+        'last_seen': status['last_seen'],
+        'events': status['events'],
+        'set_topic': MQTT_SET_TOPIC,
+        'state_topic': MQTT_STATE_TOPIC,
+        'avail_topic': MQTT_AVAIL_TOPIC,
+        'button_topic': MQTT_BUTTON_TOPIC,
+        'attack_states': status['attack_states'],
+    })
 
 
-def handle_result(action: str, ok: bool, msg: str, denied: bool) -> None:
+def _handle_result(action: str, ok: bool, msg: str, denied: bool) -> dict:
+    """Maneja el resultado de una operación MQTT."""
     if denied:
-        flash(f'{action}: 🔒 ACCESO DENEGADO', 'denied')
+        message = f'{action}: 🔒 ACCESO DENEGADO'
+        category = 'denied'
     else:
-        flash(f"{action}: {'OK' if ok else 'ERROR'} - {msg}", 'ok' if ok else 'error')
+        message = f"{action}: {'OK' if ok else 'ERROR'} - {msg}"
+        category = 'ok' if ok else 'error'
+    
+    if not _is_ajax_request():
+        flash(message, category)
+    
+    return {
+        'success': ok and not denied,
+        'message': message,
+        'category': category,
+        'denied': denied
+    }
+
+
+def _device_action(action: str, state: str):
+    """Ejecuta una acción del dispositivo."""
+    ok, msg, denied = publish_payload({'state': state})
+    result = _handle_result(action, ok, msg, denied)
+    
+    if _is_ajax_request():
+        return jsonify(result)
+    else:
+        return redirect(url_for('main.index'))
 
 
 @bp.post('/toggle')
 def toggle():
-    ok, msg, denied = publish_payload({'state': 'TOGGLE'})
-    handle_result('TOGGLE', ok, msg, denied)
-    return redirect(url_for('main.index'))
+    return _device_action('TOGGLE', 'TOGGLE')
 
 
 @bp.post('/on')
 def turn_on():
-    ok, msg, denied = publish_payload({'state': 'ON'})
-    handle_result('ON', ok, msg, denied)
-    return redirect(url_for('main.index'))
+    return _device_action('ON', 'ON')
 
 
 @bp.post('/off')
 def turn_off():
-    ok, msg, denied = publish_payload({'state': 'OFF'})
-    handle_result('OFF', ok, msg, denied)
-    return redirect(url_for('main.index'))
+    return _device_action('OFF', 'OFF')
 
 
 @bp.post('/button-single')
 def button_single():
     ok, msg, denied = publish_button_single()
-    handle_result('BOTÓN SINGLE', ok, msg, denied)
-    return redirect(url_for('main.index'))
+    result = _handle_result('BOTÓN SINGLE', ok, msg, denied)
+    
+    if _is_ajax_request():
+        return jsonify(result)
+    else:
+        return redirect(url_for('main.index'))
 
 
-@bp.post('/attack2/start')
-def attack2_start():
-    started, msg = start_attack2()
-    flash(msg, 'ok' if started else 'warn')
-    return redirect(url_for('main.index'))
-
-
-@bp.post('/attack2/stop')
-def attack2_stop():
-    flash(stop_attack2(), 'warn')
-    return redirect(url_for('main.index'))
-
-
-@bp.post('/attack3/start')
-def attack3_start():
-    started, msg = start_attack3()
-    flash(msg, 'ok' if started else 'warn')
-    return redirect(url_for('main.index'))
-
-
-@bp.post('/attack3/stop')
-def attack3_stop():
-    flash(stop_attack3(), 'warn')
-    return redirect(url_for('main.index'))
+# Rutas dinámicas para ataques
+@bp.route('/attack/<attack_id>/<action>', methods=['POST'])
+def attack_handler(attack_id: str, action: str):
+    """Maneja todas las acciones de ataques de forma dinámica."""
+    attack_manager = _get_attack_manager()
+    
+    if not attack_manager:
+        result = {
+            'success': False,
+            'message': 'Sistema de ataques no disponible',
+            'category': 'error'
+        }
+        
+        if _is_ajax_request():
+            return jsonify(result)
+        else:
+            flash(result['message'], result['category'])
+            return redirect(url_for('main.index'))
+    
+    if action == 'start':
+        started, msg = attack_manager.start_attack(attack_id)
+        result = {
+            'success': started,
+            'message': msg,
+            'category': 'ok' if started else 'warn'
+        }
+    elif action == 'stop':
+        msg = attack_manager.stop_attack(attack_id)
+        result = {
+            'success': True,
+            'message': msg,
+            'category': 'warn'
+        }
+    else:
+        result = {
+            'success': False,
+            'message': f'Acción no válida: {action}',
+            'category': 'error'
+        }
+    
+    if _is_ajax_request():
+        return jsonify(result)
+    else:
+        flash(result['message'], result['category'])
+        return redirect(url_for('main.index'))
 
 
 @bp.get('/health')
 def health():
-    data = get_runtime_copy()
+    status = _get_status_data()
+    data = status['data']
+    
     return {
         'ok': True,
         'broker_online': data['broker_online'],
-        'device_status': compute_device_status(data),
+        'device_status': status['device_status'],
         'last_state': data['last_state_text'],
         'last_error': data['last_error'],
-        'attack2_active': is_attack2_running(),
+        'attack_states': status['attack_states'],
     }

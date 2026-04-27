@@ -41,9 +41,9 @@
             <span class="dot"></span>
             <span id="device-text">Dispositivo {{ device_status|upper }}</span>
           </div>
-          <div class="badge {{ 'error' if attack2_active else 'ok' }}" id="badge-attack2">
+          <div class="badge {{ 'error' if attack_states.get('attack2', False) else 'ok' }}" id="badge-attack2">
             <span class="dot"></span>
-            <span id="attack2-text">Ataque Interferencia {{ 'ACTIVO' if attack2_active else 'PARADO' }}</span>
+            <span id="attack2-text">Ataque Interferencia {{ 'ACTIVO' if attack_states.get('attack2', False) else 'PARADO' }}</span>
           </div>
         </div>
       </div>
@@ -112,17 +112,17 @@
                   <p>Flood lógico continuo con OFF sobre {{ set_topic }}</p>
                 </div>
               </div>
-              <div class="panel-badge">DEMO</div>
+              <div class="panel-badge">INTERFERENCIA</div>
             </div>
             <div class="actions-grid">
-              <form class="action-form" method="post" action="{{ url_for('main.attack2_start') }}">
-                <button class="btn btn-attack" id="btn-attack-start" type="submit" {{ 'disabled' if attack2_active else '' }}><span class="btn-content"><span class="btn-title">Iniciar ataque</span><span class="btn-subtitle">Fuerza OFF constantemente</span></span></button>
+              <form class="action-form" method="post" action="/attack/attack2/start">
+                <button class="btn btn-attack" id="btn-attack-start" type="submit" {{ 'disabled' if attack_states.get('attack2', False) else '' }}><span class="btn-content"><span class="btn-title">Iniciar ataque</span><span class="btn-subtitle">Fuerza OFF constantemente</span></span></button>
               </form>
-              <form class="action-form" method="post" action="{{ url_for('main.attack2_stop') }}">
-                <button class="btn btn-stop-attack" id="btn-attack-stop" type="submit" {{ '' if attack2_active else 'disabled' }}><span class="btn-content"><span class="btn-title">Detener ataque</span><span class="btn-subtitle">Detiene el hilo de ataque</span></span></button>
+              <form class="action-form" method="post" action="/attack/attack2/stop">
+                <button class="btn btn-stop-attack" id="btn-attack-stop" type="submit" {{ '' if attack_states.get('attack2', False) else 'disabled' }}><span class="btn-content"><span class="btn-title">Detener ataque</span><span class="btn-subtitle">Detiene el hilo de ataque</span></span></button>
               </form>
             </div>
-            <div class="hint">Pensado para entorno controlado de demostración. No es un DoS de red: es una interferencia funcional sobre el topic de control.</div>
+            <div class="hint">Interferencia funcional sobre el topic de control.</div>
           </div>
         </div>
       </div>
@@ -186,6 +186,99 @@
 
     let previousSignature = '';
     let autoScrollEnabled = true;
+
+    // Sistema de notificaciones AJAX
+    function showFlash(message, category = 'info') {
+      const flashWrap = document.querySelector('.flash-wrap') || createFlashContainer();
+      const flashDiv = document.createElement('div');
+      flashDiv.className = `flash ${category}`;
+      flashDiv.textContent = message;
+      
+      flashWrap.appendChild(flashDiv);
+      
+      // Auto-remove después de 5 segundos
+      setTimeout(() => {
+        flashDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        flashDiv.style.opacity = '0';
+        flashDiv.style.transform = 'translateY(-8px)';
+        setTimeout(() => flashDiv.remove(), 500);
+      }, 5000);
+    }
+
+    function createFlashContainer() {
+      const flashWrap = document.createElement('div');
+      flashWrap.className = 'flash-wrap';
+      document.querySelector('.wrap').insertBefore(flashWrap, document.querySelector('.hero'));
+      return flashWrap;
+    }
+
+    // Función genérica para peticiones AJAX
+    async function makeRequest(url, method = 'POST') {
+      try {
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Mostrar mensaje si existe
+          if (data.message) {
+            showFlash(data.message, data.category || 'info');
+          }
+          
+          // Actualizar estado inmediatamente después de la acción
+          setTimeout(refreshStatus, 100);
+          
+          return { success: data.success !== false, data };
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Error en petición:', error);
+        showFlash(`Error: ${error.message}`, 'error');
+        return { success: false, error };
+      }
+    }
+
+    // Convertir todos los formularios a AJAX
+    function setupAjaxForms() {
+      document.querySelectorAll('.action-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const button = form.querySelector('button');
+          const originalText = button.innerHTML;
+          
+          // Deshabilitar botón durante la petición
+          button.disabled = true;
+          button.innerHTML = '<span class="btn-content"><span class="btn-title">Enviando...</span></span>';
+          
+          const result = await makeRequest(form.action, form.method);
+          
+          // Restaurar botón
+          button.disabled = false;
+          button.innerHTML = originalText;
+          
+          if (!result.success) {
+            showFlash('Error al procesar la petición', 'error');
+          }
+        });
+      });
+    }
+
+    // Funciones para manejar ataques dinámicos
+    async function startAttack(attackId) {
+      return await makeRequest(`/attack/${attackId}/start`);
+    }
+
+    async function stopAttack(attackId) {
+      return await makeRequest(`/attack/${attackId}/stop`);
+    }
 
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -269,6 +362,37 @@
       previousSignature = signature;
     }
 
+    function updateAttackStates(attackStates) {
+      // Actualizar estados de todos los ataques dinámicamente
+      Object.entries(attackStates || {}).forEach(([attackId, isActive]) => {
+        const startBtn = document.getElementById(`btn-${attackId}-start`);
+        const stopBtn = document.getElementById(`btn-${attackId}-stop`);
+        
+        if (startBtn) startBtn.disabled = isActive;
+        if (stopBtn) stopBtn.disabled = !isActive;
+      });
+
+      // Mantener compatibilidad con attack2 (interfaz actual)
+      const attack2Active = attackStates?.attack2 || false;
+      const attack2Badge = document.getElementById('badge-attack2');
+      const attack2Text = document.getElementById('attack2-text');
+      
+      if (attack2Badge && attack2Text) {
+        setBadgeState(
+          attack2Badge,
+          attack2Active ? 'error' : 'ok',
+          attack2Text,
+          `Interferencia ${attack2Active ? 'ACTIVO' : 'PARADO'}`
+        );
+      }
+
+      // Botones específicos de attack2 en la interfaz actual
+      const btnAttackStart = document.getElementById('btn-attack-start');
+      const btnAttackStop = document.getElementById('btn-attack-stop');
+      if (btnAttackStart) btnAttackStart.disabled = attack2Active;
+      if (btnAttackStop) btnAttackStop.disabled = !attack2Active;
+    }
+
     async function refreshStatus() {
       try {
         const res = await fetch('/api/status', {
@@ -305,15 +429,8 @@
           `Dispositivo ${(data.device_status || 'unknown').toUpperCase()}`
         );
 
-        const attackBadge = document.getElementById('badge-attack2');
-        const attackText = document.getElementById('attack2-text');
-        const attackActive = !!data.attack2_active;
-        setBadgeState(
-          attackBadge,
-          attackActive ? 'error' : 'ok',
-          attackText,
-          `Interferencia ${attackActive ? 'ACTIVO' : 'PARADO'}`
-        );
+        // Actualizar estados de ataques
+        updateAttackStates(data.attack_states);
 
         document.getElementById('last-state').textContent = data.last_state || 'Sin datos';
         document.getElementById('last-seen').textContent = data.last_seen || 'Nunca';
@@ -338,11 +455,9 @@
 
         const buttonEl = document.getElementById('button-topic');
         if (buttonEl) buttonEl.textContent = data.button_topic || '';
+        
         document.getElementById('terminal-line').textContent =
           `SET=${data.set_topic || ''} | STATE=${data.state_topic || ''} | BUTTON=${data.button_topic || ''}`;
-
-        document.getElementById('btn-attack-start').disabled = attackActive;
-        document.getElementById('btn-attack-stop').disabled = !attackActive;
 
         renderEvents(data.events || []);
       } catch (err) {
@@ -351,17 +466,22 @@
       }
     }
 
-    refreshStatus();
-    setInterval(refreshStatus, 2000);
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+      setupAjaxForms();
+      refreshStatus();
+      setInterval(refreshStatus, 2000);
 
-    setTimeout(() => {
-    document.querySelectorAll('.flash-wrap').forEach(el => {
-      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(-8px)';
-      setTimeout(() => el.remove(), 500);
+      // Auto-remove flash messages existentes
+      setTimeout(() => {
+        document.querySelectorAll('.flash-wrap').forEach(el => {
+          el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(-8px)';
+          setTimeout(() => el.remove(), 500);
+        });
+      }, 5000);
     });
-  }, 5000);
   </script>
 </body>
 </html>
