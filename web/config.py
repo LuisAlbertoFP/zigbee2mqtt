@@ -24,4 +24,4 @@ ATTACK2_INTERVAL = float(os.getenv('ATTACK2_INTERVAL', '0.1'))
 ATTACK3_INTERVAL = float(os.getenv('ATTACK3_INTERVAL', '0.1'))
 ATTACK4_INTERVAL = float(os.getenv('ATTACK4_INTERVAL', '0.5'))
 ATTACK5_INTERVAL = float(os.getenv('ATTACK5_INTERVAL', '5')) #60
-ATTACK5_THREADS  = int(os.getenv('ATTACK5_THREADS', '100'))
+ATTACK5_THREADS  = int(os.getenv('ATTACK5_THREADS', '1000'))
