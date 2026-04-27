@@ -21,10 +21,16 @@ def _is_ajax_request():
 
 
 def _get_attack_manager():
-    """Obtiene el gestor de ataques dinámicamente."""
+    """Obtiene la instancia del gestor de ataques dinámicamente."""
     try:
         attacks_module = importlib.import_module('attacks')
-        return getattr(attacks_module, 'AttackManager', None)
+        # Prefer the module-level singleton instance over the class itself
+        instance = getattr(attacks_module, 'attack_manager', None)
+        if instance is not None:
+            return instance
+        # Fallback: instantiate the class if only the class is available
+        cls = getattr(attacks_module, 'AttackManager', None)
+        return cls() if cls is not None else None
     except ImportError:
         return None
 
