@@ -156,6 +156,35 @@
               </form>
             </div>
             <div class="hint">Spoofing de temperatura: sobreescribe el topic de estado del sensor con -30°C.</div>
+
+            <div class="panel-head" style="margin-top:1rem;">
+              <div class="panel-head-left">
+                <div class="panel-icon">🔧</div>
+                <div>
+                  <h3>Calibración del sensor</h3>
+                  <p>Modifica <code>temperature_calibration</code> vía <code>/set</code></p>
+                </div>
+              </div>
+              <div class="panel-badge">CALIBRACIÓN</div>
+            </div>
+            <div class="actions-grid">
+              <form class="action-form" method="post" action="/temp-calibration/set">
+                <button class="btn btn-attack" type="submit">
+                  <span class="btn-content">
+                    <span class="btn-title">Calibración -30</span>
+                    <span class="btn-subtitle">Publica <code>temperature_calibration: -30</code></span>
+                  </span>
+                </button>
+              </form>
+              <form class="action-form" method="post" action="/temp-calibration/reset">
+                <button class="btn btn-stop-attack" type="submit">
+                  <span class="btn-content">
+                    <span class="btn-title">Reset calibración</span>
+                    <span class="btn-subtitle">Publica <code>temperature_calibration: 0</code></span>
+                  </span>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>

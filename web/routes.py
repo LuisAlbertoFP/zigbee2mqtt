@@ -2,8 +2,8 @@ from flask import Blueprint, current_app, flash, jsonify, redirect, render_templ
 import importlib
 import inspect
 
-from config import MQTT_AVAIL_TOPIC, MQTT_BUTTON_TOPIC, MQTT_SET_TOPIC, MQTT_STATE_TOPIC
-from mqtt_service import ensure_subscriber_started, publish_button_single, publish_payload
+from config import MQTT_AVAIL_TOPIC, MQTT_BUTTON_TOPIC, MQTT_SET_TOPIC, MQTT_STATE_TOPIC, MQTT_SET_TEMP_TOPIC
+from mqtt_service import ensure_subscriber_started, publish_button_single, publish_payload, publish_to_topic
 from state import get_runtime_copy
 from utils import compute_device_status, format_last_seen
 
@@ -200,9 +200,28 @@ def attack_handler(attack_id: str, action: str):
         return redirect(url_for('main.index'))
 
 
+@bp.post('/temp-calibration/set')
+def temp_calibration_set():
+    """Establece temperature_calibration a -30 en el sensor."""
+    ok, msg, denied = publish_to_topic(MQTT_SET_TEMP_TOPIC, {'temperature_calibration': -30})
+    result = _handle_result('CALIBRACIÓN TEMP -30', ok, msg, denied)
+    if _is_ajax_request():
+        return jsonify(result)
+    return redirect(url_for('main.index'))
+
+
+@bp.post('/temp-calibration/reset')
+def temp_calibration_reset():
+    """Resetea temperature_calibration a 0 en el sensor."""
+    ok, msg, denied = publish_to_topic(MQTT_SET_TEMP_TOPIC, {'temperature_calibration': 0})
+    result = _handle_result('CALIBRACIÓN TEMP RESET', ok, msg, denied)
+    if _is_ajax_request():
+        return jsonify(result)
+    return redirect(url_for('main.index'))
+
+
 @bp.get('/health')
-def health():
-    status = _get_status_data()
+def health():    status = _get_status_data()
     data = status['data']
     
     return {
