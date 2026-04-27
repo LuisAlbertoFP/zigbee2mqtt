@@ -117,10 +117,10 @@
             </div>
             <div class="actions-grid">
               <form class="action-form" method="post" action="/attack/attack2/start">
-                <button class="btn btn-attack" id="btn-attack-start" type="submit" {{ 'disabled' if attack_states.get('attack2', False) else '' }}><span class="btn-content"><span class="btn-title">Iniciar ataque</span><span class="btn-subtitle">Fuerza OFF constantemente</span></span></button>
+                <button class="btn btn-attack" id="btn-attack2-start" type="submit" {{ 'disabled' if attack_states.get('attack2', False) else '' }}><span class="btn-content"><span class="btn-title">Iniciar ataque</span><span class="btn-subtitle">Fuerza OFF constantemente</span></span></button>
               </form>
               <form class="action-form" method="post" action="/attack/attack2/stop">
-                <button class="btn btn-stop-attack" id="btn-attack-stop" type="submit" {{ '' if attack_states.get('attack2', False) else 'disabled' }}><span class="btn-content"><span class="btn-title">Detener ataque</span><span class="btn-subtitle">Detiene el hilo de ataque</span></span></button>
+                <button class="btn btn-stop-attack" id="btn-attack2-stop" type="submit" {{ '' if attack_states.get('attack2', False) else 'disabled' }}><span class="btn-content"><span class="btn-title">Detener ataque</span><span class="btn-subtitle">Detiene el hilo de ataque</span></span></button>
               </form>
             </div>
             <div class="hint">Interferencia funcional sobre el topic de control.</div>
@@ -249,7 +249,7 @@
     async function makeRequest(url, method = 'POST') {
       try {
         const response = await fetch(url, {
-          method: method,
+          method: method.toUpperCase(),
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
@@ -400,16 +400,14 @@
       Object.entries(attackStates || {}).forEach(([attackId, isActive]) => {
         const startBtn = document.getElementById(`btn-${attackId}-start`);
         const stopBtn = document.getElementById(`btn-${attackId}-stop`);
-        
         if (startBtn) startBtn.disabled = isActive;
         if (stopBtn) stopBtn.disabled = !isActive;
       });
 
-      // Mantener compatibilidad con attack2 (interfaz actual)
+      // Actualizar badge de attack2
       const attack2Active = attackStates?.attack2 || false;
       const attack2Badge = document.getElementById('badge-attack2');
       const attack2Text = document.getElementById('attack2-text');
-      
       if (attack2Badge && attack2Text) {
         setBadgeState(
           attack2Badge,
@@ -418,12 +416,6 @@
           `Interferencia ${attack2Active ? 'ACTIVO' : 'PARADO'}`
         );
       }
-
-      // Botones específicos de attack2 en la interfaz actual
-      const btnAttackStart = document.getElementById('btn-attack-start');
-      const btnAttackStop = document.getElementById('btn-attack-stop');
-      if (btnAttackStart) btnAttackStart.disabled = attack2Active;
-      if (btnAttackStop) btnAttackStop.disabled = !attack2Active;
     }
 
     async function refreshStatus() {
