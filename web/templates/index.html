@@ -8,6 +8,7 @@
 </head>
 <body>
   <div class="wrap">
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="flash-wrap">
@@ -18,170 +19,130 @@
       {% endif %}
     {% endwith %}
 
-    <section class="hero">
-      <div class="hero-card hero-main">
-        <div class="brand">
-          <img class="brand-logo" src="{{ url_for('static', filename='logotipo.png') }}" alt="Logo">
-          <div class="brand-text">
-            <h1>{{ app_name }}</h1>
-            <p>Panel de control MQTT con control remoto, emulación de botón y ataque lógico continuado.</p>
-          </div>
-        </div>
-        <div class="terminal-line" id="terminal-line">SET={{ set_topic }} | STATE={{ state_topic }} | BUTTON={{ button_topic }}</div>
-      </div>
-
-      <div class="hero-card hero-status">
-        <div class="status-title">Estado rápido</div>
-        <div class="status-badges">
-          <div class="badge {{ 'ok' if broker_online else 'error' }}" id="badge-broker">
-            <span class="dot"></span>
-            <span id="broker-text">Broker {{ 'ONLINE' if broker_online else 'OFFLINE' }}</span>
-          </div>
-          <div class="badge {{ 'ok' if device_status == 'online' else ('error' if device_status == 'offline' else 'warn') }}" id="badge-device">
-            <span class="dot"></span>
-            <span id="device-text">Dispositivo {{ device_status|upper }}</span>
-          </div>
-          <div class="badge {{ 'error' if attack_states.get('attack2', False) else 'ok' }}" id="badge-attack2">
-            <span class="dot"></span>
-            <span id="attack2-text">Ataque Interferencia {{ 'ACTIVO' if attack_states.get('attack2', False) else 'PARADO' }}</span>
-          </div>
+    <!-- ── HEADER BAR ── -->
+    <header class="topbar">
+      <div class="topbar-brand">
+        <img class="brand-logo" src="{{ url_for('static', filename='logotipo.png') }}" alt="Logo">
+        <div>
+          <div class="topbar-title">{{ app_name }}</div>
+          <div class="topbar-sub" id="terminal-line">SET={{ set_topic }} | STATE={{ state_topic }} | BUTTON={{ button_topic }}</div>
         </div>
       </div>
-    </section>
+      <div class="topbar-badges">
+        <div class="badge {{ 'ok' if broker_online else 'error' }}" id="badge-broker">
+          <span class="dot"></span>
+          <span id="broker-text">Broker {{ 'ONLINE' if broker_online else 'OFFLINE' }}</span>
+        </div>
+        <div class="badge {{ 'ok' if device_status == 'online' else ('error' if device_status == 'offline' else 'warn') }}" id="badge-device">
+          <span class="dot"></span>
+          <span id="device-text">Dispositivo {{ device_status|upper }}</span>
+        </div>
+        <div class="badge {{ 'error' if attack_states.get('attack2', False) else 'ok' }}" id="badge-attack2">
+          <span class="dot"></span>
+          <span id="attack2-text">Interferencia {{ 'ACTIVO' if attack_states.get('attack2', False) else 'PARADO' }}</span>
+        </div>
+        <span class="live-pill" id="live-pill">LIVE</span>
+      </div>
+    </header>
 
-    <section class="grid">
+    <!-- ── MAIN 3-COL GRID ── -->
+    <main class="main-grid">
+
+      <!-- COL 1: Comandos -->
       <div class="card">
-        <h2>Comandos</h2>
-        <p>Acciones directas contra el topic del dispositivo y emulación MQTT del botón.</p>
+        <div class="card-title">Comandos</div>
 
         <div class="tabs">
           <div class="tab-buttons">
-            <button class="tab-btn active" data-tab="control">Control</button>
-            <button class="tab-btn" data-tab="button">Botón</button>
-            <button class="tab-btn" data-tab="attack">Ataque</button>
-            <button class="tab-btn" data-tab="attack4">Temp -30</button>
+            <button class="tab-btn active" data-tab="control">⚡ Control</button>
+            <button class="tab-btn" data-tab="button">🖲 Botón</button>
+            <button class="tab-btn" data-tab="attack">💥 Ataque</button>
+            <button class="tab-btn" data-tab="attack4">🌡 Temp</button>
           </div>
 
+          <!-- Control -->
           <div class="tab-panel active" id="tab-control">
-            <div class="panel-head">
-              <div class="panel-head-left">
-                <div class="panel-icon">⚡</div>
-                <div>
-                  <h3>Control del actuador</h3>
-                  <p>Publica en {{ set_topic }}</p>
-                </div>
-              </div>
-              <div class="panel-badge">MQTT SET</div>
-            </div>
+            <div class="panel-meta">Publica en <span class="pill" id="set-topic-tab">{{ set_topic }}</span></div>
             <div class="actions-grid">
               <form class="action-form" method="post" action="{{ url_for('main.turn_on') }}">
-                <button class="btn btn-on" type="submit"><span class="btn-content"><span class="btn-title">Encender</span><span class="btn-subtitle">Publica <code>{"state":"ON"}</code></span></span></button>
+                <button class="btn btn-on" type="submit">
+                  <span class="btn-title">Encender</span>
+                  <span class="btn-sub"><code>{"state":"ON"}</code></span>
+                </button>
               </form>
               <form class="action-form" method="post" action="{{ url_for('main.turn_off') }}">
-                <button class="btn btn-off" type="submit"><span class="btn-content"><span class="btn-title">Apagar</span><span class="btn-subtitle">Publica <code>{"state":"OFF"}</code></span></span></button>
+                <button class="btn btn-off" type="submit">
+                  <span class="btn-title">Apagar</span>
+                  <span class="btn-sub"><code>{"state":"OFF"}</code></span>
+                </button>
               </form>
               <form class="action-form" method="post" action="{{ url_for('main.toggle') }}">
-                <button class="btn btn-toggle" type="submit"><span class="btn-content"><span class="btn-title">Toggle</span><span class="btn-subtitle">Alterna el estado del dispositivo</span></span></button>
+                <button class="btn btn-toggle" type="submit" style="grid-column:span 2">
+                  <span class="btn-title">Toggle</span>
+                  <span class="btn-sub">Alterna el estado</span>
+                </button>
               </form>
             </div>
           </div>
 
+          <!-- Botón -->
           <div class="tab-panel" id="tab-button">
-            <div class="panel-head">
-              <div class="panel-head-left">
-                <div class="panel-icon">🖲️</div>
-                <div>
-                  <h3>Emulación de botón</h3>
-                  <p>Publica en {{ button_topic }}</p>
-                </div>
-              </div>
-              <div class="panel-badge">BUTTON MQTT</div>
-            </div>
+            <div class="panel-meta">Publica en <span class="pill">{{ button_topic }}</span></div>
             <div class="actions-grid">
               <form class="action-form" method="post" action="{{ url_for('main.button_single') }}">
-                <button class="btn btn-emulate" type="submit"><span class="btn-content"><span class="btn-title">Single</span><span class="btn-subtitle">Emula acción single del pulsador</span></span></button>
+                <button class="btn btn-emulate" type="submit" style="grid-column:span 2">
+                  <span class="btn-title">Single</span>
+                  <span class="btn-sub">Emula acción single del pulsador</span>
+                </button>
               </form>
             </div>
           </div>
 
+          <!-- Ataque 2 -->
           <div class="tab-panel" id="tab-attack">
-            <div class="panel-head">
-              <div class="panel-head-left">
-                <div class="panel-icon">💥</div>
-                <div>
-                  <h3>Ataque Interferencia</h3>
-                  <p>Flood lógico continuo con OFF sobre {{ set_topic }}</p>
-                </div>
-              </div>
-              <div class="panel-badge">INTERFERENCIA</div>
-            </div>
+            <div class="panel-meta">Flood OFF continuo sobre <span class="pill">{{ set_topic }}</span></div>
             <div class="actions-grid">
               <form class="action-form" method="post" action="/attack/attack2/start">
-                <button class="btn btn-attack" id="btn-attack2-start" type="submit" {{ 'disabled' if attack_states.get('attack2', False) else '' }}><span class="btn-content"><span class="btn-title">Iniciar ataque</span><span class="btn-subtitle">Fuerza OFF constantemente</span></span></button>
+                <button class="btn btn-attack" id="btn-attack2-start" type="submit" {{ 'disabled' if attack_states.get('attack2', False) else '' }}>
+                  <span class="btn-title">▶ Iniciar</span>
+                  <span class="btn-sub">Fuerza OFF constantemente</span>
+                </button>
               </form>
               <form class="action-form" method="post" action="/attack/attack2/stop">
-                <button class="btn btn-stop-attack" id="btn-attack2-stop" type="submit" {{ '' if attack_states.get('attack2', False) else 'disabled' }}><span class="btn-content"><span class="btn-title">Detener ataque</span><span class="btn-subtitle">Detiene el hilo de ataque</span></span></button>
+                <button class="btn btn-stop-attack" id="btn-attack2-stop" type="submit" {{ '' if attack_states.get('attack2', False) else 'disabled' }}>
+                  <span class="btn-title">■ Detener</span>
+                  <span class="btn-sub">Para el hilo de ataque</span>
+                </button>
               </form>
             </div>
-            <div class="hint">Interferencia funcional sobre el topic de control.</div>
           </div>
 
+          <!-- Ataque 4 -->
           <div class="tab-panel" id="tab-attack4">
-            <div class="panel-head">
-              <div class="panel-head-left">
-                <div class="panel-icon">🌡️</div>
-                <div>
-                  <h3>Ataque Temperatura -30°C</h3>
-                  <p>Spoofea la lectura del sensor publicando <code>temperature: -30</code> en el topic de estado</p>
-                </div>
-              </div>
-              <div class="panel-badge">TEMP SPOOF</div>
-            </div>
+            <div class="panel-meta">Spoof sensor → <code>temperature: -30°C</code></div>
             <div class="actions-grid">
               <form class="action-form" method="post" action="/attack/attack4/start">
                 <button class="btn btn-attack" id="btn-attack4-start" type="submit" {{ 'disabled' if attack_states.get('attack4', False) else '' }}>
-                  <span class="btn-content">
-                    <span class="btn-title">Iniciar ataque</span>
-                    <span class="btn-subtitle">Publica -30 constantemente</span>
-                  </span>
+                  <span class="btn-title">▶ Iniciar spoof</span>
+                  <span class="btn-sub">Publica -30 continuamente</span>
                 </button>
               </form>
               <form class="action-form" method="post" action="/attack/attack4/stop">
                 <button class="btn btn-stop-attack" id="btn-attack4-stop" type="submit" {{ '' if attack_states.get('attack4', False) else 'disabled' }}>
-                  <span class="btn-content">
-                    <span class="btn-title">Detener ataque</span>
-                    <span class="btn-subtitle">Detiene el hilo de ataque</span>
-                  </span>
+                  <span class="btn-title">■ Detener spoof</span>
+                  <span class="btn-sub">Para el hilo de ataque</span>
                 </button>
               </form>
-            </div>
-            <div class="hint">Spoofing de temperatura: sobreescribe el topic de estado del sensor con -30°C.</div>
-
-            <div class="panel-head" style="margin-top:1rem;">
-              <div class="panel-head-left">
-                <div class="panel-icon">🔧</div>
-                <div>
-                  <h3>Calibración del sensor</h3>
-                  <p>Modifica <code>temperature_calibration</code> vía <code>/set</code></p>
-                </div>
-              </div>
-              <div class="panel-badge">CALIBRACIÓN</div>
-            </div>
-            <div class="actions-grid">
               <form class="action-form" method="post" action="/temp-calibration/set">
-                <button class="btn btn-attack" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">Calibración -30</span>
-                    <span class="btn-subtitle">Publica <code>temperature_calibration: -30</code></span>
-                  </span>
+                <button class="btn btn-calib" type="submit">
+                  <span class="btn-title">⚙ Calibrar -30</span>
+                  <span class="btn-sub"><code>temperature_calibration: -30</code></span>
                 </button>
               </form>
               <form class="action-form" method="post" action="/temp-calibration/reset">
-                <button class="btn btn-stop-attack" type="submit">
-                  <span class="btn-content">
-                    <span class="btn-title">Reset calibración</span>
-                    <span class="btn-subtitle">Publica <code>temperature_calibration: 0</code></span>
-                  </span>
+                <button class="btn btn-calib-reset" type="submit">
+                  <span class="btn-title">↺ Reset calib.</span>
+                  <span class="btn-sub"><code>temperature_calibration: 0</code></span>
                 </button>
               </form>
             </div>
@@ -189,13 +150,14 @@
         </div>
       </div>
 
+      <!-- COL 2: Telemetría -->
       <div class="card">
-        <h2>Telemetría</h2>
-        <p>Estado observado por el suscriptor MQTT.</p>
+        <div class="card-title">Telemetría</div>
 
         <div class="state-box">
+          <div class="state-label">ESTADO</div>
           <div class="state-main" id="last-state">{{ last_state }}</div>
-          <div class="state-sub">Última actualización: <span id="last-seen">{{ last_seen }}</span></div>
+          <div class="state-sub">Actualizado: <span id="last-seen">{{ last_seen }}</span></div>
         </div>
 
         {% if last_error %}
@@ -205,146 +167,117 @@
         {% endif %}
 
         <div class="meta">
-          <div class="meta-item"><span class="meta-label">Topic SET</span><span class="pill" id="set-topic">{{ set_topic }}</span></div>
-          <div class="meta-item"><span class="meta-label">Topic STATE</span><span class="pill" id="state-topic">{{ state_topic }}</span></div>
-          <div class="meta-item"><span class="meta-label">Topic BUTTON</span><span class="pill" id="button-topic">{{ button_topic }}</span></div>
+          <div class="meta-item">
+            <span class="meta-label">SET</span>
+            <span class="pill" id="set-topic">{{ set_topic }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">STATE</span>
+            <span class="pill" id="state-topic">{{ state_topic }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">BUTTON</span>
+            <span class="pill" id="button-topic">{{ button_topic }}</span>
+          </div>
         </div>
       </div>
-    </section>
 
-    <section class="log-terminal">
-      <div class="log-header">
-        <span>LOGS EN TIEMPO REAL</span>
-        <div class="log-header-right">
-          <span class="live-pill" id="live-pill">LIVE</span>
-          <button type="button" class="log-toggle" id="autoscroll-toggle" aria-pressed="true">AUTO-SCROLL</button>
+      <!-- COL 3: Log -->
+      <div class="card card-log">
+        <div class="log-header">
+          <span class="card-title">Log</span>
+          <div class="log-header-right">
+            <button type="button" class="log-toggle" id="autoscroll-toggle" aria-pressed="true">AUTO-SCROLL</button>
+          </div>
+        </div>
+        <div class="log-body" id="log-body">
+          {% for event in events %}
+            <div class="log-line {{ event.level if event.level in ['ok','info','warn','error'] else 'info' }}">
+              <span class="log-time">{{ event.ts|int }}</span>
+              <span class="log-level">[{{ event.level|upper }}]</span>
+              <span class="log-msg">{{ event.message }}</span>
+            </div>
+          {% else %}
+            <div class="log-line info">
+              <span class="log-msg">Sin eventos todavía...</span>
+            </div>
+          {% endfor %}
         </div>
       </div>
 
-      <div class="log-body" id="log-body">
-        {% for event in events %}
-          <div class="log-line {{ event.level if event.level in ['ok','info','warn','error'] else 'info' }}">
-            <span class="log-time">{{ event.ts|int }}</span>
-            <span class="log-level">[{{ event.level|upper }}]</span>
-            <span class="log-msg">{{ event.message }}</span>
-          </div>
-        {% else %}
-          <div class="log-line info">
-            <span class="log-msg">Sin eventos todavía...</span>
-          </div>
-        {% endfor %}
-      </div>
-    </section>
+    </main>
 
     <div class="footer">MQTT HACK TOOL</div>
   </div>
 
   <script>
-    const buttons = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-    const logBody = document.getElementById('log-body');
+    const tabBtns  = document.querySelectorAll('.tab-btn');
+    const panels   = document.querySelectorAll('.tab-panel');
+    const logBody  = document.getElementById('log-body');
     const livePill = document.getElementById('live-pill');
     const autoScrollToggle = document.getElementById('autoscroll-toggle');
 
     let previousSignature = '';
     let autoScrollEnabled = true;
 
-    // Sistema de notificaciones AJAX
     function showFlash(message, category = 'info') {
       const flashWrap = document.querySelector('.flash-wrap') || createFlashContainer();
-      const flashDiv = document.createElement('div');
-      flashDiv.className = `flash ${category}`;
-      flashDiv.textContent = message;
-      
-      flashWrap.appendChild(flashDiv);
-      
-      // Auto-remove después de 5 segundos
+      const div = document.createElement('div');
+      div.className = `flash ${category}`;
+      div.textContent = message;
+      flashWrap.appendChild(div);
       setTimeout(() => {
-        flashDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        flashDiv.style.opacity = '0';
-        flashDiv.style.transform = 'translateY(-8px)';
-        setTimeout(() => flashDiv.remove(), 500);
-      }, 5000);
+        div.style.transition = 'opacity .4s ease, transform .4s ease';
+        div.style.opacity = '0';
+        div.style.transform = 'translateY(-6px)';
+        setTimeout(() => div.remove(), 400);
+      }, 4000);
     }
 
     function createFlashContainer() {
-      const flashWrap = document.createElement('div');
-      flashWrap.className = 'flash-wrap';
-      document.querySelector('.wrap').insertBefore(flashWrap, document.querySelector('.hero'));
-      return flashWrap;
+      const fw = document.createElement('div');
+      fw.className = 'flash-wrap';
+      document.querySelector('.wrap').insertBefore(fw, document.querySelector('.topbar'));
+      return fw;
     }
 
-    // Función genérica para peticiones AJAX
     async function makeRequest(url, method = 'POST') {
       try {
-        const response = await fetch(url, {
+        const res = await fetch(url, {
           method: method.toUpperCase(),
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         });
-
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Mostrar mensaje si existe
-          if (data.message) {
-            showFlash(data.message, data.category || 'info');
-          }
-          
-          // Actualizar estado inmediatamente después de la acción
+        if (res.ok) {
+          const data = await res.json();
+          if (data.message) showFlash(data.message, data.category || 'info');
           setTimeout(refreshStatus, 100);
-          
           return { success: data.success !== false, data };
-        } else {
-          throw new Error(`HTTP ${response.status}`);
         }
-      } catch (error) {
-        console.error('Error en petición:', error);
-        showFlash(`Error: ${error.message}`, 'error');
-        return { success: false, error };
+        throw new Error(`HTTP ${res.status}`);
+      } catch (err) {
+        showFlash(`Error: ${err.message}`, 'error');
+        return { success: false };
       }
     }
 
-    // Convertir todos los formularios a AJAX
     function setupAjaxForms() {
       document.querySelectorAll('.action-form').forEach(form => {
-        form.addEventListener('submit', async (e) => {
+        form.addEventListener('submit', async e => {
           e.preventDefault();
-          
-          const button = form.querySelector('button');
-          const originalText = button.innerHTML;
-          
-          // Deshabilitar botón durante la petición
-          button.disabled = true;
-          button.innerHTML = '<span class="btn-content"><span class="btn-title">Enviando...</span></span>';
-          
-          const result = await makeRequest(form.action, form.method);
-          
-          // Restaurar botón
-          button.disabled = false;
-          button.innerHTML = originalText;
-          
-          if (!result.success) {
-            showFlash('Error al procesar la petición', 'error');
-          }
+          const btn = form.querySelector('button');
+          const orig = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = '<span class="btn-title">...</span>';
+          await makeRequest(form.action, form.method);
+          btn.disabled = false;
+          btn.innerHTML = orig;
         });
       });
     }
 
-    // Funciones para manejar ataques dinámicos
-    async function startAttack(attackId) {
-      return await makeRequest(`/attack/${attackId}/start`);
-    }
-
-    async function stopAttack(attackId) {
-      return await makeRequest(`/attack/${attackId}/stop`);
-    }
-
-    buttons.forEach(btn => {
+    tabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        buttons.forEach(b => b.classList.remove('active'));
+        tabBtns.forEach(b => b.classList.remove('active'));
         panels.forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
@@ -355,33 +288,25 @@
       autoScrollEnabled = !autoScrollEnabled;
       autoScrollToggle.classList.toggle('off', !autoScrollEnabled);
       autoScrollToggle.setAttribute('aria-pressed', String(autoScrollEnabled));
-      autoScrollToggle.textContent = autoScrollEnabled ? 'AUTO-SCROLL' : 'AUTO-SCROLL OFF';
+      autoScrollToggle.textContent = autoScrollEnabled ? 'AUTO-SCROLL' : 'SCROLL OFF';
     });
 
-    function levelClass(level) {
-      return ['ok', 'info', 'warn', 'error'].includes(level) ? level : 'info';
-    }
+    function levelClass(l) { return ['ok','info','warn','error'].includes(l) ? l : 'info'; }
 
-    function setBadgeState(el, stateClass, textEl, text) {
-      el.classList.remove('ok', 'warn', 'error');
-      el.classList.add(stateClass);
+    function setBadge(el, cls, textEl, text) {
+      el.classList.remove('ok','warn','error');
+      el.classList.add(cls);
       textEl.textContent = text;
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text ?? '';
-      return div.innerHTML;
+    function escHtml(t) {
+      const d = document.createElement('div');
+      d.textContent = t ?? '';
+      return d.innerHTML;
     }
 
-    function eventSignature(events) {
-      return (events || []).map(e => `${Math.floor(e.ts || 0)}|${e.level || ''}|${e.message || ''}`).join('||');
-    }
-
-    function formatLogTime(event) {
-      if (event.ts_text) return event.ts_text;
-      if (typeof event.ts === 'number') return String(Math.floor(event.ts));
-      return '';
+    function sig(events) {
+      return (events||[]).map(e=>`${Math.floor(e.ts||0)}|${e.level}|${e.message}`).join('||');
     }
 
     function flashLog() {
@@ -391,148 +316,88 @@
     }
 
     function renderEvents(events) {
-      const atBottom = logBody.scrollHeight - logBody.scrollTop - logBody.clientHeight < 24;
-      const signature = eventSignature(events);
+      const signature = sig(events);
       const changed = signature !== previousSignature;
-
-      if (!events || events.length === 0) {
-        logBody.innerHTML = `
-          <div class="log-line info">
-            <span class="log-msg">Sin eventos todavía...</span>
-          </div>
-        `;
+      if (!events || !events.length) {
+        logBody.innerHTML = '<div class="log-line info"><span class="log-msg">Sin eventos...</span></div>';
         previousSignature = '';
         return;
       }
-
-      logBody.innerHTML = events.map(event => `
-        <div class="log-line ${levelClass(event.level)} ${changed ? 'new' : ''}">
-          <span class="log-time">${escapeHtml(formatLogTime(event))}</span>
-          <span class="log-level">[${escapeHtml(String(event.level || 'info').toUpperCase())}]</span>
-          <span class="log-msg">${escapeHtml(event.message || '')}</span>
-        </div>
-      `).join('');
-
-      if (changed) {
-        flashLog();
-      }
-
-      if (autoScrollEnabled && (changed || atBottom)) {
-        logBody.scrollTop = 0;
-      }
-
+      logBody.innerHTML = events.map(e => `
+        <div class="log-line ${levelClass(e.level)}${changed?' new':''}">
+          <span class="log-time">${escHtml(String(Math.floor(e.ts||0)))}</span>
+          <span class="log-level">[${escHtml(String(e.level||'info').toUpperCase())}]</span>
+          <span class="log-msg">${escHtml(e.message||'')}</span>
+        </div>`).join('');
+      if (changed) flashLog();
+      if (autoScrollEnabled && changed) logBody.scrollTop = 0;
       previousSignature = signature;
     }
 
-    function updateAttackStates(attackStates) {
-      // Actualizar estados de todos los ataques dinámicamente
-      Object.entries(attackStates || {}).forEach(([attackId, isActive]) => {
-        const startBtn = document.getElementById(`btn-${attackId}-start`);
-        const stopBtn = document.getElementById(`btn-${attackId}-stop`);
-        if (startBtn) startBtn.disabled = isActive;
-        if (stopBtn) stopBtn.disabled = !isActive;
+    function updateAttackStates(states) {
+      Object.entries(states||{}).forEach(([id, active]) => {
+        const s = document.getElementById(`btn-${id}-start`);
+        const t = document.getElementById(`btn-${id}-stop`);
+        if (s) s.disabled = active;
+        if (t) t.disabled = !active;
       });
-
-      // Actualizar badge de attack2
-      const attack2Active = attackStates?.attack2 || false;
-      const attack2Badge = document.getElementById('badge-attack2');
-      const attack2Text = document.getElementById('attack2-text');
-      if (attack2Badge && attack2Text) {
-        setBadgeState(
-          attack2Badge,
-          attack2Active ? 'error' : 'ok',
-          attack2Text,
-          `Interferencia ${attack2Active ? 'ACTIVO' : 'PARADO'}`
-        );
-      }
+      const a2 = states?.attack2 || false;
+      const b = document.getElementById('badge-attack2');
+      const tx = document.getElementById('attack2-text');
+      if (b && tx) setBadge(b, a2 ? 'error' : 'ok', tx, `Interferencia ${a2 ? 'ACTIVO' : 'PARADO'}`);
     }
 
     async function refreshStatus() {
       try {
-        const res = await fetch('/api/status', {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-          cache: 'no-store'
-        });
-
-        if (!res.ok) {
-          throw new Error('HTTP ' + res.status);
-        }
-
-        const data = await res.json();
+        const res = await fetch('/api/status', { method:'GET', headers:{'Accept':'application/json'}, cache:'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
         livePill.classList.remove('offline');
 
-        const brokerBadge = document.getElementById('badge-broker');
-        const brokerText = document.getElementById('broker-text');
-        setBadgeState(
-          brokerBadge,
-          data.broker_online ? 'ok' : 'error',
-          brokerText,
-          `Broker ${data.broker_online ? 'ONLINE' : 'OFFLINE'}`
+        setBadge(
+          document.getElementById('badge-broker'), d.broker_online ? 'ok' : 'error',
+          document.getElementById('broker-text'), `Broker ${d.broker_online ? 'ONLINE' : 'OFFLINE'}`
+        );
+        const dc = d.device_status === 'online' ? 'ok' : d.device_status === 'offline' ? 'error' : 'warn';
+        setBadge(
+          document.getElementById('badge-device'), dc,
+          document.getElementById('device-text'), `Dispositivo ${(d.device_status||'unknown').toUpperCase()}`
         );
 
-        const deviceBadge = document.getElementById('badge-device');
-        const deviceText = document.getElementById('device-text');
-        const deviceClass =
-          data.device_status === 'online' ? 'ok' :
-          data.device_status === 'offline' ? 'error' : 'warn';
-        setBadgeState(
-          deviceBadge,
-          deviceClass,
-          deviceText,
-          `Dispositivo ${(data.device_status || 'unknown').toUpperCase()}`
-        );
+        updateAttackStates(d.attack_states);
 
-        // Actualizar estados de ataques
-        updateAttackStates(data.attack_states);
+        document.getElementById('last-state').textContent = d.last_state || 'Sin datos';
+        document.getElementById('last-seen').textContent  = d.last_seen  || 'Nunca';
 
-        document.getElementById('last-state').textContent = data.last_state || 'Sin datos';
-        document.getElementById('last-seen').textContent = data.last_seen || 'Nunca';
-
-        const errorBox = document.getElementById('last-error');
-        if (data.last_error) {
-          errorBox.style.display = '';
-          errorBox.textContent = data.last_error;
-        } else {
-          errorBox.style.display = 'none';
-          errorBox.textContent = '';
-        }
+        const eb = document.getElementById('last-error');
+        if (d.last_error) { eb.style.display = ''; eb.textContent = d.last_error; }
+        else              { eb.style.display = 'none'; eb.textContent = ''; }
 
         const setEl = document.getElementById('set-topic');
-        if (setEl) setEl.textContent = data.set_topic || '';
+        if (setEl) setEl.textContent = d.set_topic || '';
+        const stEl = document.getElementById('state-topic');
+        if (stEl) stEl.textContent = d.state_topic || '';
+        const btEl = document.getElementById('button-topic');
+        if (btEl) btEl.textContent = d.button_topic || '';
 
-        const stateEl = document.getElementById('state-topic');
-        if (stateEl) stateEl.textContent = data.state_topic || '';
-
-        const availEl = document.getElementById('avail-topic');
-        if (availEl) availEl.textContent = data.avail_topic || '';
-
-        const buttonEl = document.getElementById('button-topic');
-        if (buttonEl) buttonEl.textContent = data.button_topic || '';
-        
         document.getElementById('terminal-line').textContent =
-          `SET=${data.set_topic || ''} | STATE=${data.state_topic || ''} | BUTTON=${data.button_topic || ''}`;
+          `SET=${d.set_topic||''} | STATE=${d.state_topic||''} | BUTTON=${d.button_topic||''}`;
 
-        renderEvents(data.events || []);
-      } catch (err) {
+        renderEvents(d.events || []);
+      } catch(err) {
         livePill.classList.add('offline');
-        console.error('Error actualizando /api/status:', err);
+        console.error(err);
       }
     }
 
-    // Inicialización
     document.addEventListener('DOMContentLoaded', () => {
       setupAjaxForms();
       refreshStatus();
       setInterval(refreshStatus, 2000);
-
-      // Auto-remove flash messages existentes
       setTimeout(() => {
         document.querySelectorAll('.flash-wrap').forEach(el => {
-          el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
           el.style.opacity = '0';
-          el.style.transform = 'translateY(-8px)';
-          setTimeout(() => el.remove(), 500);
+          setTimeout(() => el.remove(), 400);
         });
       }, 5000);
     });
