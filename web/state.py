@@ -23,6 +23,9 @@ runtime_state: dict[str, Any] = {
 attack2_active = False
 attack2_thread: threading.Thread | None = None
 
+attack3_active = False
+attack3_thread: threading.Thread | None = None
+
 
 def add_event(level: str, message: str, timestamp: float) -> None:
     with state_lock:

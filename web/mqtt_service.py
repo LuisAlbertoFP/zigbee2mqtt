@@ -141,6 +141,14 @@ def publish_to_topic(topic: str, payload: dict[str, Any]) -> tuple[bool, str, bo
 
     try:
         client.connect(MQTT_HOST, MQTT_PORT, 60)
+    except Exception as exc:
+        # Error de conexión TCP — el broker está caído
+        error_msg = str(exc)
+        update_runtime(last_error=error_msg, broker_online=False)
+        add_event('error', f'No se pudo conectar al broker para publicar en {topic}: {error_msg}')
+        return False, error_msg, is_access_denied(error_msg)
+
+    try:
         client.loop_start()
 
         result = client.publish(topic, json.dumps(payload), qos=0, retain=False)
@@ -161,9 +169,15 @@ def publish_to_topic(topic: str, payload: dict[str, Any]) -> tuple[bool, str, bo
         return False, error_msg, is_access_denied(error_msg)
 
     except Exception as exc:
+        # Error de publicación — no implica que el broker esté caído
         error_msg = str(exc)
-        update_runtime(last_error=error_msg, broker_online=False)
+        update_runtime(last_error=error_msg)
         add_event('error', f'Excepción publicando en {topic}: {error_msg}')
+        try:
+            client.loop_stop()
+            client.disconnect()
+        except Exception:
+            pass
         return False, error_msg, is_access_denied(error_msg)
 
 
