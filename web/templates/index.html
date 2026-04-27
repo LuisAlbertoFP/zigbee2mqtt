@@ -77,7 +77,7 @@
                 </button>
               </form>
               <form class="action-form" method="post" action="{{ url_for('main.toggle') }}">
-                <button class="btn btn-toggle" type="submit" style="grid-column:span 2">
+                <button class="btn btn-toggle" type="submit">
                   <span class="btn-title">Toggle</span>
                   <span class="btn-sub">Alterna el estado</span>
                 </button>
@@ -90,7 +90,7 @@
             <div class="panel-meta">Publica en <span class="pill">{{ button_topic }}</span></div>
             <div class="actions-grid">
               <form class="action-form" method="post" action="{{ url_for('main.button_single') }}">
-                <button class="btn btn-emulate" type="submit" style="grid-column:span 2">
+                <button class="btn btn-emulate" type="submit">
                   <span class="btn-title">Single</span>
                   <span class="btn-sub">Emula acción single del pulsador</span>
                 </button>
