@@ -27,8 +27,9 @@
 
 html {
   height: 100%;
-  /* fill exactly the viewport — no page scroll */
   overflow: hidden;
+  /* Base font size escalado para pantalla grande */
+  font-size: 18px;
 }
 
 body {
@@ -37,7 +38,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 1rem;      /* 18px base */
   line-height: 1.45;
 }
 
@@ -135,7 +136,7 @@ body::after {
 }
 
 .topbar-title {
-  font-size: 16px;
+  font-size: 1.3rem;
   color: var(--green);
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -148,10 +149,10 @@ body::after {
 }
 
 .topbar-sub {
-  font-size: 11px; color: var(--muted);
+  font-size: .72rem; color: var(--muted);
   margin-top: 2px; letter-spacing: .03em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 600px;
+  max-width: 700px;
 }
 .topbar-sub::before { content: "> "; color: var(--dim); }
 
@@ -162,11 +163,11 @@ body::after {
 /* ── Badges ── */
 .badge {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: var(--r-sm);
   border: 1px solid var(--line);
   background: rgba(0,0,0,.4);
-  font-size: 12px; color: var(--muted);
+  font-size: .78rem; color: var(--muted);
   white-space: nowrap;
 }
 .dot {
@@ -236,7 +237,7 @@ body::after {
 }
 
 .card-title {
-  font-size: 13px;
+  font-size: .85rem;
   color: var(--green);
   letter-spacing: .14em;
   text-transform: uppercase;
@@ -259,10 +260,10 @@ body::after {
   border: 1px solid var(--line);
   background: rgba(0,0,0,.5);
   color: var(--muted);
-  padding: 7px 4px;
+  padding: 8px 4px;
   border-radius: var(--r-sm);
   cursor: pointer;
-  font: inherit; font-size: 12px; font-weight: 700;
+  font: inherit; font-size: .78rem; font-weight: 700;
   letter-spacing: .04em; text-transform: uppercase;
   transition: .14s ease;
 }
