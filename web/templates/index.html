@@ -58,6 +58,7 @@
             <button class="tab-btn" data-tab="button">🖲 Botón</button>
             <button class="tab-btn" data-tab="attack">💥 Ataque</button>
             <button class="tab-btn" data-tab="attack4">🌡 Temp</button>
+            <button class="tab-btn" data-tab="attack5">☠ DoS</button>
           </div>
 
           <!-- Control -->
@@ -147,6 +148,26 @@
               </form>
             </div>
           </div>
+
+          <!-- Ataque 5: DoS -->
+          <div class="tab-panel" id="tab-attack5">
+            <div class="panel-meta">DoS TCP flood → broker MQTT</div>
+            <div class="actions-grid">
+              <form class="action-form" method="post" action="/attack/attack5/start">
+                <button class="btn btn-attack" id="btn-attack5-start" type="submit" {{ 'disabled' if attack_states.get('attack5', False) else '' }}>
+                  <span class="btn-title">☠ Iniciar DoS</span>
+                  <span class="btn-sub">100 conexiones TCP flood al broker</span>
+                </button>
+              </form>
+              <form class="action-form" method="post" action="/attack/attack5/stop">
+                <button class="btn btn-stop-attack" id="btn-attack5-stop" type="submit" {{ '' if attack_states.get('attack5', False) else 'disabled' }}>
+                  <span class="btn-title">■ Detener DoS</span>
+                  <span class="btn-sub">Para todas las conexiones</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
         </div>
       </div>
 

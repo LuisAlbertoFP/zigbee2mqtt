@@ -4,6 +4,7 @@ from attacks.base import BaseAttack
 from attacks.attack2 import Attack2
 from attacks.attack3 import Attack3
 from attacks.attack4 import Attack4
+from attacks.attack5 import Attack5
 
 
 class AttackManager:
@@ -24,6 +25,7 @@ class AttackManager:
             'attack2': Attack2(),
             'attack3': Attack3(),
             'attack4': Attack4(),
+            'attack5': Attack5(),
         }
 
     def register_attack(self, attack: BaseAttack):
