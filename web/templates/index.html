@@ -237,7 +237,7 @@
     function createFlashContainer() {
       const fw = document.createElement('div');
       fw.className = 'flash-wrap';
-      document.querySelector('.wrap').insertBefore(fw, document.querySelector('.topbar'));
+      document.body.appendChild(fw);
       return fw;
     }
 

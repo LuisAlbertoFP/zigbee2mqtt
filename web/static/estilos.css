@@ -77,21 +77,34 @@ body::after {
   overflow: hidden;
 }
 
-/* ── Flash ── */
-.flash-wrap { flex: 0 0 auto; }
+/* ── Flash (overlay, no desplaza el layout) ── */
+.flash-wrap {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 420px;
+  pointer-events: none;
+}
 .flash {
   display: flex; align-items: center; gap: 8px;
-  margin-bottom: 4px; padding: 8px 12px;
+  padding: 9px 14px;
   border-radius: var(--r-sm); border: 1px solid;
   font-size: 13px; animation: fadeIn .2s ease;
-  background: rgba(0,0,0,.8);
+  background: rgba(2,6,4,.96);
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,.6);
 }
 .flash::before { content: "// "; color: var(--dim); }
-.flash.ok     { color: #c0ffe0; border-color: rgba(0,255,100,.2); }
-.flash.error  { color: #ffd0d8; border-color: rgba(255,45,85,.2); }
+.flash.ok     { color: #c0ffe0; border-color: rgba(0,255,100,.35); }
+.flash.error  { color: #ffd0d8; border-color: rgba(255,45,85,.35); }
 .flash.denied,
-.flash.warn   { color: #fff0c0; border-color: rgba(255,184,0,.2); }
-@keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+.flash.warn   { color: #fff0c0; border-color: rgba(255,184,0,.35); }
+@keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
 
 /* ── Top bar ── */
 .topbar {
