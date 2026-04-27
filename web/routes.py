@@ -221,7 +221,8 @@ def temp_calibration_reset():
 
 
 @bp.get('/health')
-def health():    status = _get_status_data()
+def health():
+    status = _get_status_data()
     data = status['data']
     
     return {
