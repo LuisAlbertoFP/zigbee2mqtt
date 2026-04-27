@@ -13,6 +13,7 @@ MQTT_AVAIL_TOPIC = os.getenv('MQTT_AVAIL_TOPIC', 'zigbee2mqtt/lab_ts0001_switch/
 MQTT_BUTTON_TOPIC = os.getenv('MQTT_BUTTON_TOPIC', 'zigbee2mqtt/0x14b457fffe075dd4')
 
 MQTT_SET_TEMP_TOPIC = os.getenv('MQTT_SET_TEMP_TOPIC', 'zigbee2mqtt/0x8c73dafffecf8009/set')
+MQTT_TEMP_STATE_TOPIC = os.getenv('MQTT_TEMP_STATE_TOPIC', 'zigbee2mqtt/0x8c73dafffecf8009')
 
 
 
