@@ -202,9 +202,27 @@ def attack_handler(attack_id: str, action: str):
 
 @bp.post('/temp-calibration/set')
 def temp_calibration_set():
-    """Establece temperature_calibration a -30 en el sensor."""
+    """Establece temperature_calibration a -30 en el sensor.
+
+    El SNZB-02D es un EndDevice que duerme — el cambio solo tiene efecto
+    en el próximo reporte del dispositivo. Se publican varios intentos
+    para asegurar que el dispositivo lo recibe cuando se despierte.
+    """
     from attacks.attack4 import set_calibration
+    import threading
+
     set_calibration(-30)
+
+    def _retry():
+        import time
+        payload = {'temperature_calibration': -30}
+        for _ in range(6):
+            publish_to_topic(MQTT_SET_TEMP_TOPIC, payload)
+            time.sleep(10)
+
+    threading.Thread(target=_retry, daemon=True, name='calib-set-retry').start()
+
+    # Primera publicación inmediata para la respuesta AJAX
     ok, msg, denied = publish_to_topic(MQTT_SET_TEMP_TOPIC, {'temperature_calibration': -30})
     result = _handle_result('CALIBRACIÓN TEMP -30', ok, msg, denied)
     if _is_ajax_request():
@@ -214,9 +232,26 @@ def temp_calibration_set():
 
 @bp.post('/temp-calibration/reset')
 def temp_calibration_reset():
-    """Resetea temperature_calibration a 0 en el sensor."""
+    """Resetea temperature_calibration a 0 en el sensor.
+
+    El SNZB-02D es un EndDevice que duerme — el cambio solo tiene efecto
+    en el próximo reporte del dispositivo. Se publican varios intentos
+    para asegurar que el dispositivo lo recibe cuando se despierte.
+    """
     from attacks.attack4 import set_calibration
+    import threading
+
     set_calibration(0)
+
+    def _retry():
+        import time
+        payload = {'temperature_calibration': 0}
+        for _ in range(6):
+            publish_to_topic(MQTT_SET_TEMP_TOPIC, payload)
+            time.sleep(10)
+
+    threading.Thread(target=_retry, daemon=True, name='calib-reset-retry').start()
+
     ok, msg, denied = publish_to_topic(MQTT_SET_TEMP_TOPIC, {'temperature_calibration': 0})
     result = _handle_result('CALIBRACIÓN TEMP RESET', ok, msg, denied)
     if _is_ajax_request():
