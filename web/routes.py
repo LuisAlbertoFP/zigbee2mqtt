@@ -203,6 +203,8 @@ def attack_handler(attack_id: str, action: str):
 @bp.post('/temp-calibration/set')
 def temp_calibration_set():
     """Establece temperature_calibration a -30 en el sensor."""
+    from attacks.attack4 import set_calibration
+    set_calibration(-30)
     ok, msg, denied = publish_to_topic(MQTT_SET_TEMP_TOPIC, {'temperature_calibration': -30})
     result = _handle_result('CALIBRACIÓN TEMP -30', ok, msg, denied)
     if _is_ajax_request():
@@ -213,6 +215,8 @@ def temp_calibration_set():
 @bp.post('/temp-calibration/reset')
 def temp_calibration_reset():
     """Resetea temperature_calibration a 0 en el sensor."""
+    from attacks.attack4 import set_calibration
+    set_calibration(0)
     ok, msg, denied = publish_to_topic(MQTT_SET_TEMP_TOPIC, {'temperature_calibration': 0})
     result = _handle_result('CALIBRACIÓN TEMP RESET', ok, msg, denied)
     if _is_ajax_request():
