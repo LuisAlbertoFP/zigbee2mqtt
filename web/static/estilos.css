@@ -433,7 +433,7 @@ body::after {
   border: 1px solid rgba(255,45,85,.2);
   border-left: 3px solid var(--red);
   background: rgba(255,45,85,.04);
-  color: #ffc0c8; font-size: 12px;
+  color: #ffc0c8; font-size: .78rem;
   overflow-wrap: anywhere; flex: 0 0 auto;
 }
 .error-box::before { content: "[ERR] "; color: var(--red); }
@@ -449,7 +449,7 @@ body::after {
   min-width: 0;
 }
 .meta-label {
-  font-size: 10px; color: var(--dim);
+  font-size: .67rem; color: var(--dim);
   letter-spacing: .12em; text-transform: uppercase;
   flex: 0 0 auto;
 }
@@ -461,7 +461,7 @@ body::after {
   border-radius: 4px;
   border: 1px solid rgba(0,255,100,.14);
   background: rgba(0,255,100,.04);
-  color: #a0ffd0; font-size: 11px;
+  color: #a0ffd0; font-size: .72rem;
 }
 
 /* ── Log card ── */
@@ -491,7 +491,7 @@ body::after {
 .log-body {
   flex: 1 1 0;
   overflow-y: auto;
-  font-size: 12px;
+  font-size: .78rem;
   font-family: var(--font);
   display: flex; flex-direction: column;
   padding: 4px 0;
@@ -515,8 +515,8 @@ body::after {
   100% { background: transparent; transform: none; }
 }
 
-.log-time  { color: var(--dim); min-width: 68px; font-size: 11px; flex: 0 0 auto; }
-.log-level { font-weight: 700; letter-spacing: .05em; min-width: 68px; flex: 0 0 auto; font-size: 11px; }
+.log-time  { color: var(--dim); min-width: 80px; font-size: .67rem; flex: 0 0 auto; }
+.log-level { font-weight: 700; letter-spacing: .05em; min-width: 72px; flex: 0 0 auto; font-size: .72rem; }
 .log-line.ok    .log-level { color: var(--green); }
 .log-line.info  .log-level { color: var(--blue); }
 .log-line.warn  .log-level { color: var(--amber); }
@@ -530,7 +530,7 @@ body::after {
   flex: 0 0 auto;
   text-align: center;
   color: var(--dim);
-  font-size: 10px;
+  font-size: .67rem;
   letter-spacing: .18em;
   text-transform: uppercase;
   padding: 4px 0;
