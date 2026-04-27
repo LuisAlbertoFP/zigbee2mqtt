@@ -59,6 +59,7 @@
             <button class="tab-btn active" data-tab="control">Control</button>
             <button class="tab-btn" data-tab="button">Botón</button>
             <button class="tab-btn" data-tab="attack">Ataque</button>
+            <button class="tab-btn" data-tab="attack4">Temp -30</button>
           </div>
 
           <div class="tab-panel active" id="tab-control">
@@ -123,6 +124,38 @@
               </form>
             </div>
             <div class="hint">Interferencia funcional sobre el topic de control.</div>
+          </div>
+
+          <div class="tab-panel" id="tab-attack4">
+            <div class="panel-head">
+              <div class="panel-head-left">
+                <div class="panel-icon">🌡️</div>
+                <div>
+                  <h3>Ataque Temperatura -30</h3>
+                  <p>Fuerza <code>current_heating_setpoint: -30</code> en <code>MQTT_SET_TEMP_TOPIC</code></p>
+                </div>
+              </div>
+              <div class="panel-badge">TEMP SPOOF</div>
+            </div>
+            <div class="actions-grid">
+              <form class="action-form" method="post" action="/attack/attack4/start">
+                <button class="btn btn-attack" id="btn-attack4-start" type="submit" {{ 'disabled' if attack_states.get('attack4', False) else '' }}>
+                  <span class="btn-content">
+                    <span class="btn-title">Iniciar ataque</span>
+                    <span class="btn-subtitle">Publica -30 constantemente</span>
+                  </span>
+                </button>
+              </form>
+              <form class="action-form" method="post" action="/attack/attack4/stop">
+                <button class="btn btn-stop-attack" id="btn-attack4-stop" type="submit" {{ '' if attack_states.get('attack4', False) else 'disabled' }}>
+                  <span class="btn-content">
+                    <span class="btn-title">Detener ataque</span>
+                    <span class="btn-subtitle">Detiene el hilo de ataque</span>
+                  </span>
+                </button>
+              </form>
+            </div>
+            <div class="hint">Spoofing de temperatura sobre el topic de control del termostato.</div>
           </div>
         </div>
       </div>

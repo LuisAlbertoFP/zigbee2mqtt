@@ -12,8 +12,13 @@ MQTT_STATE_TOPIC = os.getenv('MQTT_STATE_TOPIC', 'zigbee2mqtt/lab_ts0001_switch'
 MQTT_AVAIL_TOPIC = os.getenv('MQTT_AVAIL_TOPIC', 'zigbee2mqtt/lab_ts0001_switch/availability')
 MQTT_BUTTON_TOPIC = os.getenv('MQTT_BUTTON_TOPIC', 'zigbee2mqtt/0x14b457fffe075dd4')
 
+MQTT_SET_TEMP_TOPIC = os.getenv('MQTT_SET_TEMP_TOPIC', 'zigbee2mqtt/0x8c73dafffecf8009/set')
+
+
+
 STATE_TTL_SECONDS = int(os.getenv('STATE_TTL_SECONDS', '30'))
 MAX_EVENTS = int(os.getenv('MAX_EVENTS', '50'))
 PUBLISH_TIMEOUT = float(os.getenv('MQTT_PUBLISH_TIMEOUT', '5'))
 ATTACK2_INTERVAL = float(os.getenv('ATTACK2_INTERVAL', '0.1'))
 ATTACK3_INTERVAL = float(os.getenv('ATTACK3_INTERVAL', '0.1'))
+ATTACK4_INTERVAL = float(os.getenv('ATTACK4_INTERVAL', '0.5'))

